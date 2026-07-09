@@ -14,7 +14,7 @@ class GoogleLoginTest extends TestCase
 
     private function fakeGoogleUser(string $id, string $email, string $name = 'Trung'): SocialiteUser
     {
-        $user = new SocialiteUser();
+        $user = new SocialiteUser;
         $user->map([
             'id' => $id,
             'name' => $name,
@@ -39,6 +39,8 @@ class GoogleLoginTest extends TestCase
             'email' => 'trung@example.com',
         ]);
         $this->assertSame(1, User::count());
+        $this->assertNotNull(User::first()->email_verified_at);
+        $this->assertTrue(User::first()->hasVerifiedEmail());
     }
 
     public function test_callback_with_existing_google_id_does_not_duplicate_user(): void
@@ -55,5 +57,17 @@ class GoogleLoginTest extends TestCase
 
         $this->assertSame(1, User::count());
         $this->assertAuthenticated();
+    }
+
+    public function test_new_google_user_can_reach_dashboard(): void
+    {
+        Socialite::shouldReceive('driver->user')
+            ->andReturn($this->fakeGoogleUser('google-456', 'newuser@example.com'));
+
+        $this->get('/auth/google/callback');
+
+        $response = $this->get('/dashboard');
+
+        $response->assertOk();
     }
 }

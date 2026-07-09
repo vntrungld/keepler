@@ -29,6 +29,10 @@ class GoogleController extends Controller
             ],
         );
 
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
+
         Auth::login($user, remember: true);
 
         return redirect()->intended('/dashboard');
