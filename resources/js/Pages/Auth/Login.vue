@@ -96,5 +96,14 @@ const submit = () => {
                 </PrimaryButton>
             </div>
         </form>
+
+        <div class="mt-4">
+            <a
+                href="/auth/google/redirect"
+                class="flex w-full items-center justify-center gap-2 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+                Đăng nhập với Google
+            </a>
+        </div>
     </GuestLayout>
 </template>
