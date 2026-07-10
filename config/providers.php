@@ -26,7 +26,7 @@ return [
     ],
     'youtube' => [
         'name' => 'YouTube Premium',
-        'sender_domains' => ['youtube.com', 'google.com'],
+        'sender_domains' => ['youtube.com'],
         'payment_keywords' => ['receipt', 'payment', 'youtube premium'],
         'cancellation_keywords' => ['cancelled', 'canceled', 'membership paused'],
         'amount_regex' => '/(?:US)?\$\s?([0-9][0-9.,]*)/',
