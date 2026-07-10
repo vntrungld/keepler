@@ -10,13 +10,18 @@
 // product ("Google One", "Spotify", ...) in the body rather than the sender.
 return [
     // Senders that forward/consolidate receipts for many different
-    // products. When ProviderMatcher sees a From address in this list (or a
-    // subject matching an aggregator pattern), it resolves the real
+    // products (payment processors / app stores). Entries may be an exact
+    // email (e.g. Google Play) or a bare domain (e.g. Stripe, whose local
+    // part varies per merchant). When ProviderMatcher sees such a sender (or
+    // a subject matching an aggregator pattern), it resolves the real
     // provider by scanning the email body against each provider's
-    // `match_keywords`, falling back to normal sender-domain matching only
-    // if nothing in the body matches.
+    // `match_keywords`. If nothing in the body matches a catalog provider,
+    // the email is skipped (NO fall-back to sender-domain matching) — this
+    // is what stops unknown-merchant receipts (e.g. Runpod via Stripe) from
+    // being mis-attributed to whichever provider shares the processor domain.
     '_aggregators' => [
         'googleplay-noreply@google.com',
+        'stripe.com',
     ],
 
     'netflix' => [
@@ -51,10 +56,10 @@ return [
     ],
     'chatgpt' => [
         'name' => 'ChatGPT Plus',
-        'sender_domains' => ['openai.com', 'stripe.com'],
+        'sender_domains' => ['openai.com'],
         'payment_keywords' => ['receipt', 'payment', 'chatgpt'],
         'cancellation_keywords' => ['cancelled', 'canceled', 'subscription ended'],
-        'match_keywords' => ['chatgpt'],
+        'match_keywords' => ['chatgpt', 'openai'],
         'default_currency' => 'USD',
         'default_cycle' => 'monthly',
         'cancel_url' => 'https://chatgpt.com/#settings',

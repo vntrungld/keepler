@@ -62,9 +62,14 @@ class SubscriptionScanner
 
     public function buildQuery(): string
     {
-        $domains = collect(config('providers'))
+        $providerDomains = collect(config('providers'))
             ->reject(fn ($p, $key) => $key === '_aggregators')
-            ->flatMap(fn ($p) => $p['sender_domains'])
+            ->flatMap(fn ($p) => $p['sender_domains']);
+
+        $aggregatorDomains = collect(config('providers._aggregators', []))
+            ->map(fn ($entry) => str_contains($entry, '@') ? substr(strrchr($entry, '@'), 1) : $entry);
+
+        $domains = $providerDomains->merge($aggregatorDomains)
             ->unique()
             ->implode(' OR ');
 
