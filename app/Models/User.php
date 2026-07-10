@@ -12,7 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable(['name', 'email', 'password', 'google_id', 'avatar'])]
-#[Hidden(['password', 'remember_token'])]
+#[Hidden(['password', 'remember_token', 'gmail_access_token', 'gmail_refresh_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
@@ -28,6 +28,9 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'gmail_access_token' => 'encrypted',
+            'gmail_refresh_token' => 'encrypted',
+            'gmail_token_expires_at' => 'datetime',
         ];
     }
 
@@ -37,5 +40,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function hasGmailConnected(): bool
+    {
+        return ! empty($this->gmail_refresh_token);
     }
 }
