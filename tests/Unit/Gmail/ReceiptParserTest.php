@@ -78,4 +78,127 @@ class ReceiptParserTest extends TestCase
         $this->assertNull($result['amount']);
         $this->assertFalse($result['confidence']['amount']);
     }
+
+    public function test_vnd_amount_with_symbol_after_number(): void
+    {
+        $google = config('providers.google');
+
+        $result = ReceiptParser::parse(
+            $google,
+            'Your Google Play Order Receipt',
+            "Item Price\nGoogle AI Plus (400 GB) (Google One) (by Google LLC) 66.000 ₫/month\nAuto-renewing subscription\nTax: 7.333 ₫\nTotal: 73.333 ₫/month",
+            '2026-07-01',
+        );
+
+        $this->assertSame(73333.0, $result['amount']);
+        $this->assertSame('VND', $result['currency']);
+    }
+
+    public function test_prefers_total_line_over_item_price_line(): void
+    {
+        $google = config('providers.google');
+
+        $result = ReceiptParser::parse(
+            $google,
+            'Your Google Play Order Receipt',
+            "Google AI Plus (400 GB) (Google One) 66.000 ₫/month\nTotal: 73.333 ₫/month",
+            '2026-07-01',
+        );
+
+        $this->assertSame(73333.0, $result['amount']);
+        $this->assertSame('VND', $result['currency']);
+    }
+
+    public function test_usd_amount_still_works(): void
+    {
+        $result = ReceiptParser::parse(
+            $this->netflix,
+            'Your Netflix receipt',
+            'Amount charged: $12.99',
+            '2026-07-01',
+        );
+
+        $this->assertSame(12.99, $result['amount']);
+        $this->assertSame('USD', $result['currency']);
+    }
+
+    public function test_vnd_symbol_before_number(): void
+    {
+        $google = config('providers.google');
+
+        $result = ReceiptParser::parse(
+            $google,
+            'Receipt',
+            'Total: ₫66.000',
+            '2026-07-01',
+        );
+
+        $this->assertSame(66000.0, $result['amount']);
+        $this->assertSame('VND', $result['currency']);
+    }
+
+    public function test_vnd_suffix_variants(): void
+    {
+        $google = config('providers.google');
+
+        $withVnd = ReceiptParser::parse($google, 'Receipt', 'Total: 66.000 VND', '2026-07-01');
+        $this->assertSame(66000.0, $withVnd['amount']);
+        $this->assertSame('VND', $withVnd['currency']);
+
+        $withDong = ReceiptParser::parse($google, 'Receipt', 'Total: 73.333 đồng', '2026-07-01');
+        $this->assertSame(73333.0, $withDong['amount']);
+        $this->assertSame('VND', $withDong['currency']);
+
+        $withDNoMark = ReceiptParser::parse($google, 'Receipt', 'Total: 73.333 đ', '2026-07-01');
+        $this->assertSame(73333.0, $withDNoMark['amount']);
+        $this->assertSame('VND', $withDNoMark['currency']);
+    }
+
+    public function test_marketing_email_does_not_look_like_a_receipt(): void
+    {
+        $result = ReceiptParser::parse(
+            $this->netflix,
+            'Premium has music you love in high quality audio',
+            'REJOIN PREMIUM Headphones on us when you join Premium.',
+            '2026-07-01',
+        );
+
+        $this->assertFalse($result['is_receipt']);
+    }
+
+    public function test_real_receipt_with_amount_looks_like_a_receipt(): void
+    {
+        $result = ReceiptParser::parse(
+            $this->netflix,
+            'Your Netflix receipt',
+            'Amount charged: $12.99',
+            '2026-07-01',
+        );
+
+        $this->assertTrue($result['is_receipt']);
+    }
+
+    public function test_receipt_keyword_without_amount_looks_like_a_receipt(): void
+    {
+        $result = ReceiptParser::parse(
+            $this->netflix,
+            'Your Google Play order receipt',
+            'Thanks for your order, no amount included here.',
+            '2026-07-01',
+        );
+
+        $this->assertTrue($result['is_receipt']);
+    }
+
+    public function test_cancellation_without_amount_still_looks_like_a_receipt(): void
+    {
+        $result = ReceiptParser::parse(
+            $this->netflix,
+            'Your Netflix membership has been cancelled',
+            "Your membership ended. We're sorry to see you go.",
+            '2026-07-05',
+        );
+
+        $this->assertTrue($result['is_receipt']);
+    }
 }

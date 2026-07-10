@@ -117,6 +117,44 @@ class SubscriptionScannerTest extends TestCase
         $this->assertNull($candidates[0]['duplicate_of']);
     }
 
+    public function test_marketing_email_produces_no_candidate(): void
+    {
+        $user = User::factory()->create();
+        $scanner = $this->scannerReturning([
+            'm1' => [
+                'from' => 'no-reply@spotify.com',
+                'subject' => 'Premium has music you love in high quality audio',
+                'date' => '2026-07-01',
+                'body' => 'REJOIN PREMIUM Headphones on us when you join Premium.',
+            ],
+        ]);
+
+        $candidates = $scanner->scan($user);
+
+        $this->assertCount(0, $candidates);
+    }
+
+    public function test_google_play_google_one_receipt_in_vnd_becomes_a_candidate(): void
+    {
+        $user = User::factory()->create();
+        $scanner = $this->scannerReturning([
+            'm1' => [
+                'from' => 'googleplay-noreply@google.com',
+                'subject' => 'Your Google Play Order Receipt from Jun 28, 2026',
+                'date' => '2026-06-28',
+                'body' => "Item Price\nGoogle AI Plus (400 GB) (Google One) (by Google LLC) 66.000 ₫/month\nAuto-renewing subscription\nTax: 7.333 ₫\nTotal: 73.333 ₫/month",
+            ],
+        ]);
+
+        $candidates = $scanner->scan($user);
+
+        $this->assertCount(1, $candidates);
+        $this->assertSame('google', $candidates[0]['provider_key']);
+        $this->assertSame(73333.0, $candidates[0]['amount']);
+        $this->assertSame('VND', $candidates[0]['currency']);
+        $this->assertContains($candidates[0]['action'], ['create', 'skip']);
+    }
+
     public function test_latest_email_per_provider_and_cycle_wins(): void
     {
         $user = User::factory()->create();
