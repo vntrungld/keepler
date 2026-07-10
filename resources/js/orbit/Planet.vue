@@ -62,11 +62,7 @@ const emit = defineEmits(['hover', 'leave', 'select']);
     opacity: 0.25;
     transform-box: fill-box;
     transform-origin: center;
-}
-@media (prefers-reduced-motion: no-preference) {
-    .orbit-pulse {
-        animation: orbit-pulse 1.6s ease-in-out infinite;
-    }
+    animation: orbit-pulse 1.6s ease-in-out infinite;
 }
 @keyframes orbit-pulse {
     0%,
