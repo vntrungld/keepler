@@ -38,6 +38,8 @@ class ScanGmailJob implements ShouldQueue
                 'status' => 'done',
             ]);
         } catch (\Throwable $e) {
+            report($e);
+
             $scan->update([
                 'status' => 'failed',
                 'error' => 'Không đọc được Gmail. Vui lòng thử kết nối lại và quét lại.',
