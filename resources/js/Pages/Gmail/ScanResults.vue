@@ -40,6 +40,11 @@ function submit() {
 
     router.post(route('gmail.import'), { items });
 }
+
+// Deep-link to the original message in Gmail so the user can review it.
+function gmailUrl(id) {
+    return `https://mail.google.com/mail/u/0/#all/${id}`;
+}
 </script>
 
 <template>
@@ -110,6 +115,16 @@ function submit() {
                                 <p v-else class="mt-1 text-sm text-gray-600">
                                     Gói này đang có trong danh sách — sẽ được đánh dấu đã hủy.
                                 </p>
+
+                                <a
+                                    v-if="row.source_email_id"
+                                    :href="gmailUrl(row.source_email_id)"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="mt-2 inline-flex items-center gap-1 text-xs text-indigo-600 hover:underline"
+                                >
+                                    ✉️ Xem email gốc trong Gmail
+                                </a>
                             </div>
                         </div>
                     </div>
