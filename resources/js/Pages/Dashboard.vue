@@ -1,6 +1,14 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import Orbit from '@/orbit/Orbit.vue';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+
+defineProps({
+    subscriptions: { type: Array, default: () => [] },
+});
+
+const user = computed(() => usePage().props.auth.user);
 </script>
 
 <template>
@@ -8,21 +16,41 @@ import { Head } from '@inertiajs/vue3';
 
     <AuthenticatedLayout>
         <template #header>
-            <h2
-                class="text-xl font-semibold leading-tight text-gray-800"
-            >
-                Dashboard
-            </h2>
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold leading-tight text-gray-800">
+                    Vũ trụ của bạn
+                </h2>
+                <Link
+                    :href="route('subscriptions.index')"
+                    class="text-sm text-indigo-600 hover:underline"
+                >
+                    Quản lý danh sách
+                </Link>
+            </div>
         </template>
 
-        <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+        <div class="py-8">
+            <div class="mx-auto max-w-5xl sm:px-6 lg:px-8">
                 <div
-                    class="overflow-hidden bg-white shadow-sm sm:rounded-lg"
+                    v-if="subscriptions.length === 0"
+                    class="rounded-lg bg-white p-12 text-center shadow-sm"
                 >
-                    <div class="p-6 text-gray-900">
-                        You're logged in!
-                    </div>
+                    <p class="text-gray-600">
+                        Chưa có dịch vụ nào trong vũ trụ của bạn.
+                    </p>
+                    <Link
+                        :href="route('subscriptions.create')"
+                        class="mt-4 inline-block rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500"
+                    >
+                        Thêm dịch vụ đầu tiên
+                    </Link>
+                </div>
+
+                <div
+                    v-else
+                    class="rounded-lg bg-gradient-to-b from-slate-900 to-slate-800 p-4 shadow-sm"
+                >
+                    <Orbit :subscriptions="subscriptions" :user="user" />
                 </div>
             </div>
         </div>

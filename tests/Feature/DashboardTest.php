@@ -1,0 +1,54 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Subscription;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
+use Tests\TestCase;
+
+class DashboardTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_guests_are_redirected_to_login(): void
+    {
+        $this->get('/dashboard')->assertRedirect(route('login'));
+    }
+
+    public function test_dashboard_renders_only_the_current_users_non_cancelled_subscriptions(): void
+    {
+        $user = User::factory()->create();
+        Subscription::factory()->for($user)->create(['name' => 'Netflix', 'status' => 'active']);
+        Subscription::factory()->for($user)->create(['name' => 'Spotify', 'status' => 'pending_cancel']);
+        Subscription::factory()->for($user)->create(['name' => 'Old', 'status' => 'cancelled']);
+
+        $other = User::factory()->create();
+        Subscription::factory()->for($other)->create(['name' => 'Theirs', 'status' => 'active']);
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Dashboard')
+                ->has('subscriptions', 2)
+                ->where('subscriptions.0.name', 'Netflix')
+                ->where('subscriptions.1.name', 'Spotify')
+            );
+    }
+
+    public function test_each_subscription_prop_has_the_fields_the_orbit_needs(): void
+    {
+        $user = User::factory()->create();
+        Subscription::factory()->for($user)->create();
+
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Dashboard')
+                ->has('subscriptions.0', fn (Assert $sub) => $sub
+                    ->hasAll(['id', 'name', 'amount', 'currency', 'amount_vnd', 'billing_cycle', 'next_renewal_date', 'status'])
+                )
+            );
+    }
+}
