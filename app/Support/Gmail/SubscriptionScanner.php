@@ -22,13 +22,18 @@ class SubscriptionScanner
         $byGroup = [];
         foreach ($ids as $id) {
             $msg = $this->client->getMessage($id);
-            $key = ProviderMatcher::match($msg['from'], $msg['subject']);
+            $key = ProviderMatcher::match($msg['from'], $msg['subject'], $msg['body']);
             if ($key === null) {
                 continue;
             }
 
             $provider = config("providers.$key");
             $parsed = ReceiptParser::parse($provider, $msg['subject'], $msg['body'], $msg['date']);
+
+            if ($parsed['intent'] === 'payment' && ! $parsed['is_receipt']) {
+                continue;
+            }
+
             $group = $key.'|'.$parsed['billing_cycle'];
 
             if (! isset($byGroup[$group]) || $msg['date'] > $byGroup[$group]['date']) {
@@ -49,6 +54,7 @@ class SubscriptionScanner
     public function buildQuery(): string
     {
         $domains = collect(config('providers'))
+            ->reject(fn ($p, $key) => $key === '_aggregators')
             ->flatMap(fn ($p) => $p['sender_domains'])
             ->unique()
             ->implode(' OR ');

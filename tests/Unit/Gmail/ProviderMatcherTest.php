@@ -41,4 +41,37 @@ class ProviderMatcherTest extends TestCase
     {
         $this->assertSame('google', ProviderMatcher::match('no-reply@google.com', 'Google One receipt'));
     }
+
+    public function test_aggregator_resolves_provider_from_body(): void
+    {
+        $this->assertSame('google', ProviderMatcher::match(
+            'googleplay-noreply@google.com',
+            'Your Google Play Order Receipt from Jun 28, 2026',
+            'Google AI Plus (400 GB) (Google One) (by Google LLC) 66.000 ₫/month',
+        ));
+    }
+
+    public function test_aggregator_resolves_a_different_product_from_body(): void
+    {
+        $this->assertSame('spotify', ProviderMatcher::match(
+            'googleplay-noreply@google.com',
+            'Your Google Play Order Receipt from Jun 28, 2026',
+            'Spotify Premium (by Spotify AB) 59.000 ₫/month',
+        ));
+    }
+
+    public function test_aggregator_falls_back_to_sender_domain_when_body_matches_nothing(): void
+    {
+        $this->assertSame('google', ProviderMatcher::match(
+            'googleplay-noreply@google.com',
+            'Your Google Play Order Receipt from Jun 28, 2026',
+            'Some unrecognized product name that matches no catalog entry.',
+        ));
+    }
+
+    public function test_non_aggregator_matching_is_unchanged(): void
+    {
+        $this->assertSame('netflix', ProviderMatcher::match('info@netflix.com', 'Receipt'));
+        $this->assertNull(ProviderMatcher::match('billing@notnetflix.com', 'Receipt'));
+    }
 }
