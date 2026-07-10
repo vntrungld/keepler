@@ -2,7 +2,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Orbit from '@/orbit/Orbit.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
+import axios from 'axios';
 
 defineProps({
     subscriptions: { type: Array, default: () => [] },
@@ -11,19 +12,73 @@ defineProps({
 
 const user = computed(() => usePage().props.auth.user);
 
-// Show a blocking progress popup while the (synchronous) Gmail scan runs.
+// Background scan + polling state.
 const scanning = ref(false);
+const scanError = ref(null);
+const processed = ref(0);
+const total = ref(0);
+const percent = ref(0);
+let pollTimer = null;
 
-function startScan() {
-    router.get(
-        route('gmail.scan'),
-        {},
-        {
-            onStart: () => (scanning.value = true),
-            onFinish: () => (scanning.value = false),
-        },
-    );
+function resetScanState() {
+    scanError.value = null;
+    processed.value = 0;
+    total.value = 0;
+    percent.value = 0;
 }
+
+async function startScan() {
+    scanning.value = true;
+    resetScanState();
+
+    try {
+        const { data } = await axios.post(route('gmail.scans.store'));
+        pollScan(data.id);
+    } catch (e) {
+        if (e.response?.status === 409 && e.response.data?.connect_url) {
+            window.location.href = e.response.data.connect_url;
+            return;
+        }
+        scanError.value = 'Không bắt đầu quét được. Vui lòng thử lại.';
+    }
+}
+
+function pollScan(id) {
+    pollTimer = setInterval(async () => {
+        try {
+            const { data } = await axios.get(route('gmail.scans.show', id));
+            processed.value = data.processed;
+            total.value = data.total;
+            percent.value = data.percent;
+
+            if (data.status === 'done') {
+                stopPolling();
+                router.visit(route('gmail.scans.results', id));
+            } else if (data.status === 'failed') {
+                stopPolling();
+                scanError.value =
+                    'Quét Gmail thất bại. Vui lòng thử kết nối lại và quét lại.';
+            }
+        } catch (e) {
+            stopPolling();
+            scanError.value = 'Mất kết nối khi theo dõi tiến trình.';
+        }
+    }, 1000);
+}
+
+function stopPolling() {
+    if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+    }
+}
+
+function closeScan() {
+    stopPolling();
+    scanning.value = false;
+}
+
+onBeforeUnmount(stopPolling);
 </script>
 
 <template>
@@ -103,20 +158,56 @@ function startScan() {
                 class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm"
             >
                 <div
-                    class="mx-4 flex w-full max-w-sm flex-col items-center gap-4 rounded-xl bg-white p-8 text-center shadow-2xl"
+                    class="mx-4 flex w-full max-w-sm flex-col gap-4 rounded-xl bg-white p-8 shadow-2xl"
                 >
-                    <span
-                        class="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"
-                    ></span>
-                    <div>
-                        <p class="text-lg font-semibold text-gray-900">
-                            Đang quét Gmail…
-                        </p>
-                        <p class="mt-1 text-sm text-gray-500">
-                            Đang đọc các email hóa đơn gần đây. Việc này có thể
-                            mất một chút, vui lòng chờ.
-                        </p>
-                    </div>
+                    <template v-if="!scanError">
+                        <div class="flex items-center gap-3">
+                            <span
+                                class="h-6 w-6 shrink-0 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"
+                            ></span>
+                            <p class="text-lg font-semibold text-gray-900">
+                                Đang quét Gmail…
+                            </p>
+                        </div>
+
+                        <div>
+                            <div class="h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
+                                <div
+                                    class="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                                    :style="{ width: percent + '%' }"
+                                ></div>
+                            </div>
+                            <p class="mt-2 text-center text-sm text-gray-500">
+                                <template v-if="total > 0">
+                                    Đang xử lý {{ processed }}/{{ total }} email — {{ percent }}%
+                                </template>
+                                <template v-else>
+                                    Đang tìm email hóa đơn…
+                                </template>
+                            </p>
+                        </div>
+                    </template>
+
+                    <template v-else>
+                        <p class="text-lg font-semibold text-gray-900">Quét thất bại</p>
+                        <p class="text-sm text-gray-600">{{ scanError }}</p>
+                        <div class="flex justify-end gap-2">
+                            <button
+                                type="button"
+                                class="rounded-md px-3 py-2 text-sm text-gray-600 hover:underline"
+                                @click="closeScan"
+                            >
+                                Đóng
+                            </button>
+                            <button
+                                type="button"
+                                class="rounded-md bg-emerald-600 px-3 py-2 text-sm text-white hover:bg-emerald-500"
+                                @click="startScan"
+                            >
+                                Thử lại
+                            </button>
+                        </div>
+                    </template>
                 </div>
             </div>
         </Teleport>
