@@ -9,6 +9,8 @@ import {
     isUrgent,
 } from './layout.js';
 import { brandColor, contrastText, initial } from './brandColors.js';
+import PlanetTooltip from './PlanetTooltip.vue';
+import OrbitDetailPanel from './OrbitDetailPanel.vue';
 
 const props = defineProps({
     subscriptions: { type: Array, required: true },
@@ -99,6 +101,16 @@ const yearly = computed(() =>
 );
 const planets = computed(() => [...monthly.value, ...yearly.value]);
 
+const hoveredId = ref(null);
+const selectedId = ref(null);
+
+const hoveredPlanet = computed(
+    () => planets.value.find((p) => p.sub.id === hoveredId.value) ?? null,
+);
+const selectedSub = computed(
+    () => props.subscriptions.find((s) => s.id === selectedId.value) ?? null,
+);
+
 const sunInitial = computed(() => initial(props.user?.name ?? ''));
 </script>
 
@@ -166,7 +178,24 @@ const sunInitial = computed(() => initial(props.user?.name ?? ''));
                 :letter="p.letter"
                 :status="p.sub.status"
                 :urgent="p.urgent"
+                @hover="hoveredId = p.sub.id"
+                @leave="hoveredId = null"
+                @select="selectedId = p.sub.id"
             />
         </svg>
+
+        <PlanetTooltip
+            v-if="hoveredPlanet"
+            :sub="hoveredPlanet.sub"
+            :days="hoveredPlanet.days"
+            :left-pct="(hoveredPlanet.x / VIEW) * 100"
+            :top-pct="(hoveredPlanet.y / VIEW) * 100"
+        />
+
+        <OrbitDetailPanel
+            v-if="selectedSub"
+            :sub="selectedSub"
+            @close="selectedId = null"
+        />
     </div>
 </template>
