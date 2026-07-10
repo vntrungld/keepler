@@ -13,38 +13,47 @@ class SubscriptionScanner
     }
 
     /** @return array<int,array<string,mixed>> */
-    public function scan(User $user): array
+    public function scan(User $user, ?callable $onProgress = null): array
     {
         $ids = $this->client->listMessageIds($this->buildQuery(), self::MAX_MESSAGES);
+        $total = count($ids);
+
+        if ($onProgress) {
+            $onProgress(0, $total);
+        }
 
         // Parse each message into a raw candidate keyed by provider+cycle,
         // keeping only the latest email per group.
         $byGroup = [];
+        $processed = 0;
         foreach ($ids as $id) {
             $msg = $this->client->getMessage($id);
             $key = ProviderMatcher::match($msg['from'], $msg['subject'], $msg['body']);
-            if ($key === null) {
-                continue;
+
+            if ($key !== null) {
+                $provider = config("providers.$key");
+                $parsed = ReceiptParser::parse($provider, $msg['subject'], $msg['body'], $msg['date']);
+
+                // Drop non-receipt payment emails (marketing); keep cancellations.
+                if (! ($parsed['intent'] === 'payment' && ! $parsed['is_receipt'])) {
+                    $group = $key.'|'.$parsed['billing_cycle'];
+
+                    if (! isset($byGroup[$group]) || $msg['date'] > $byGroup[$group]['date']) {
+                        $byGroup[$group] = [
+                            'provider_key' => $key,
+                            'name' => $provider['name'],
+                            'cancel_url' => $provider['cancel_url'] ?? null,
+                            'date' => $msg['date'],
+                            'source_email_id' => $id,
+                            'parsed' => $parsed,
+                        ];
+                    }
+                }
             }
 
-            $provider = config("providers.$key");
-            $parsed = ReceiptParser::parse($provider, $msg['subject'], $msg['body'], $msg['date']);
-
-            if ($parsed['intent'] === 'payment' && ! $parsed['is_receipt']) {
-                continue;
-            }
-
-            $group = $key.'|'.$parsed['billing_cycle'];
-
-            if (! isset($byGroup[$group]) || $msg['date'] > $byGroup[$group]['date']) {
-                $byGroup[$group] = [
-                    'provider_key' => $key,
-                    'name' => $provider['name'],
-                    'cancel_url' => $provider['cancel_url'] ?? null,
-                    'date' => $msg['date'],
-                    'source_email_id' => $id,
-                    'parsed' => $parsed,
-                ];
+            $processed++;
+            if ($onProgress) {
+                $onProgress($processed, $total);
             }
         }
 
