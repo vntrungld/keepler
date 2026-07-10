@@ -17,6 +17,7 @@ return [
     // if nothing in the body matches.
     '_aggregators' => [
         'googleplay-noreply@google.com',
+        'stripe.com',
     ],
 
     'netflix' => [
@@ -51,10 +52,10 @@ return [
     ],
     'chatgpt' => [
         'name' => 'ChatGPT Plus',
-        'sender_domains' => ['openai.com', 'stripe.com'],
+        'sender_domains' => ['openai.com'],
         'payment_keywords' => ['receipt', 'payment', 'chatgpt'],
         'cancellation_keywords' => ['cancelled', 'canceled', 'subscription ended'],
-        'match_keywords' => ['chatgpt'],
+        'match_keywords' => ['chatgpt', 'openai'],
         'default_currency' => 'USD',
         'default_cycle' => 'monthly',
         'cancel_url' => 'https://chatgpt.com/#settings',

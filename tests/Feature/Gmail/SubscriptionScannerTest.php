@@ -175,6 +175,31 @@ class SubscriptionScannerTest extends TestCase
         $this->assertSame('cancellation', $candidates[0]['intent']);
     }
 
+    public function test_build_query_includes_aggregator_domains(): void
+    {
+        $user = User::factory()->create();
+        $scanner = $this->scannerReturning([]);
+
+        $this->assertStringContainsString('stripe.com', $scanner->buildQuery());
+    }
+
+    public function test_stripe_receipt_for_unknown_merchant_produces_no_candidate(): void
+    {
+        $user = User::factory()->create();
+        $scanner = $this->scannerReturning([
+            'm1' => [
+                'from' => 'receipts+acct_1KLZG6LeeX2jf1uK@stripe.com',
+                'subject' => 'Your Runpod receipt [#1857-3148]',
+                'date' => '2026-07-01',
+                'body' => 'Receipt from Runpod. Payment to Runpod $50.00. partners with Stripe to provide invoicing.',
+            ],
+        ]);
+
+        $candidates = $scanner->scan($user);
+
+        $this->assertCount(0, $candidates);
+    }
+
     public function test_scan_reports_progress_for_every_message(): void
     {
         $user = User::factory()->create();

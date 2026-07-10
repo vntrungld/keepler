@@ -60,9 +60,15 @@ class ProviderMatcherTest extends TestCase
         ));
     }
 
-    public function test_aggregator_falls_back_to_sender_domain_when_body_matches_nothing(): void
+    public function test_aggregator_resolves_to_null_when_body_matches_nothing(): void
     {
-        $this->assertSame('google', ProviderMatcher::match(
+        // Previously fell back to sender-domain matching (resolving to
+        // 'google' since the aggregator sender is google.com), but that
+        // fallback is precisely what mis-assigned unrelated-merchant
+        // aggregator receipts (e.g. Stripe/Runpod) to unrelated catalog
+        // providers (e.g. chatgpt). Aggregator senders now resolve by body
+        // only; an aggregator receipt naming no catalog product is skipped.
+        $this->assertNull(ProviderMatcher::match(
             'googleplay-noreply@google.com',
             'Your Google Play Order Receipt from Jun 28, 2026',
             'Some unrecognized product name that matches no catalog entry.',
@@ -73,5 +79,32 @@ class ProviderMatcherTest extends TestCase
     {
         $this->assertSame('netflix', ProviderMatcher::match('info@netflix.com', 'Receipt'));
         $this->assertNull(ProviderMatcher::match('billing@notnetflix.com', 'Receipt'));
+    }
+
+    public function test_stripe_receipt_for_an_unknown_merchant_is_skipped(): void
+    {
+        $this->assertNull(ProviderMatcher::match(
+            'receipts+acct_1KLZG6LeeX2jf1uK@stripe.com',
+            'Your Runpod receipt [#1857-3148]',
+            'Receipt from Runpod. Payment to Runpod $50.00. partners with Stripe to provide invoicing.',
+        ));
+    }
+
+    public function test_stripe_receipt_for_a_catalog_provider_resolves_by_body(): void
+    {
+        $this->assertSame('chatgpt', ProviderMatcher::match(
+            'receipts+acct_ABC@stripe.com',
+            'Your receipt',
+            'Payment to OpenAI — ChatGPT Plus subscription $20.00',
+        ));
+    }
+
+    public function test_openai_domain_sender_still_maps_to_chatgpt(): void
+    {
+        $this->assertSame('chatgpt', ProviderMatcher::match(
+            'noreply@openai.com',
+            'Your ChatGPT receipt',
+            'chatgpt plus',
+        ));
     }
 }
