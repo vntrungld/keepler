@@ -1,8 +1,8 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Orbit from '@/orbit/Orbit.vue';
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 defineProps({
     subscriptions: { type: Array, default: () => [] },
@@ -10,6 +10,20 @@ defineProps({
 });
 
 const user = computed(() => usePage().props.auth.user);
+
+// Show a blocking progress popup while the (synchronous) Gmail scan runs.
+const scanning = ref(false);
+
+function startScan() {
+    router.get(
+        route('gmail.scan'),
+        {},
+        {
+            onStart: () => (scanning.value = true),
+            onFinish: () => (scanning.value = false),
+        },
+    );
+}
 </script>
 
 <template>
@@ -22,13 +36,15 @@ const user = computed(() => usePage().props.auth.user);
                     Vũ trụ của bạn
                 </h2>
                 <div class="flex items-center gap-3 text-sm">
-                    <Link
+                    <button
                         v-if="gmail_connected"
-                        :href="route('gmail.scan')"
-                        class="rounded-md bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-500"
+                        type="button"
+                        :disabled="scanning"
+                        class="rounded-md bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-500 disabled:opacity-60"
+                        @click="startScan"
                     >
-                        Quét Gmail
-                    </Link>
+                        {{ scanning ? 'Đang quét…' : 'Quét Gmail' }}
+                    </button>
                     <a
                         v-else
                         :href="route('gmail.connect')"
@@ -80,5 +96,29 @@ const user = computed(() => usePage().props.auth.user);
                 </div>
             </div>
         </div>
+
+        <Teleport to="body">
+            <div
+                v-if="scanning"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm"
+            >
+                <div
+                    class="mx-4 flex w-full max-w-sm flex-col items-center gap-4 rounded-xl bg-white p-8 text-center shadow-2xl"
+                >
+                    <span
+                        class="h-12 w-12 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"
+                    ></span>
+                    <div>
+                        <p class="text-lg font-semibold text-gray-900">
+                            Đang quét Gmail…
+                        </p>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Đang đọc các email hóa đơn gần đây. Việc này có thể
+                            mất một chút, vui lòng chờ.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </AuthenticatedLayout>
 </template>
