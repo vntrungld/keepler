@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -21,8 +20,7 @@ class SubscriptionModelTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $sub = Subscription::create([
-            'user_id' => $user->id,
+        $sub = $user->subscriptions()->create([
             'name' => 'Netflix',
             'amount' => 9.99,
             'currency' => 'USD',
@@ -38,8 +36,7 @@ class SubscriptionModelTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $sub = Subscription::create([
-            'user_id' => $user->id,
+        $sub = $user->subscriptions()->create([
             'name' => 'Spotify VN',
             'amount' => 59000,
             'currency' => 'VND',
@@ -53,8 +50,7 @@ class SubscriptionModelTest extends TestCase
     public function test_a_user_has_many_subscriptions(): void
     {
         $user = User::factory()->create();
-        Subscription::create([
-            'user_id' => $user->id,
+        $user->subscriptions()->create([
             'name' => 'ChatGPT',
             'amount' => 20,
             'currency' => 'USD',

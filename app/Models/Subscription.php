@@ -12,8 +12,8 @@ class Subscription extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
         'name',
+        'provider_key',
         'amount',
         'currency',
         'billing_cycle',
