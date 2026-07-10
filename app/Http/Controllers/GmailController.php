@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\GmailImportRequest;
-use App\Support\Gmail\GmailClient;
-use App\Support\Gmail\SubscriptionScanner;
+use App\Jobs\ScanGmailJob;
+use App\Models\GmailScan;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
@@ -55,18 +55,42 @@ class GmailController extends Controller
         return redirect()->back();
     }
 
-    public function scan(Request $request)
+    public function storeScan(Request $request)
     {
         $user = $request->user();
 
         if (! $user->hasGmailConnected()) {
-            return redirect()->route('gmail.connect');
+            return response()->json(['connect_url' => route('gmail.connect')], 409);
         }
 
-        $scanner = new SubscriptionScanner(new GmailClient($user));
+        $scan = $user->gmailScans()->create(['status' => 'pending']);
+        ScanGmailJob::dispatch($scan);
+
+        return response()->json(['id' => $scan->id]);
+    }
+
+    public function showScan(Request $request, GmailScan $scan)
+    {
+        abort_unless($scan->user_id === $request->user()->id, 404);
+
+        return response()->json([
+            'status' => $scan->status,
+            'processed' => $scan->processed,
+            'total' => $scan->total,
+            'percent' => $scan->progressPercent(),
+        ]);
+    }
+
+    public function scanResults(Request $request, GmailScan $scan)
+    {
+        abort_unless($scan->user_id === $request->user()->id, 404);
+
+        if ($scan->status !== 'done') {
+            return redirect()->route('dashboard');
+        }
 
         return Inertia::render('Gmail/ScanResults', [
-            'candidates' => $scanner->scan($user),
+            'candidates' => $scan->candidates ?? [],
         ]);
     }
 
