@@ -174,4 +174,25 @@ class SubscriptionScannerTest extends TestCase
         $this->assertCount(1, $candidates);
         $this->assertSame('cancellation', $candidates[0]['intent']);
     }
+
+    public function test_scan_reports_progress_for_every_message(): void
+    {
+        $user = User::factory()->create();
+        $scanner = $this->scannerReturning([
+            'm1' => ['from' => 'info@netflix.com', 'subject' => 'receipt', 'date' => '2026-07-01', 'body' => 'Charged $12.99 monthly.'],
+            'm2' => ['from' => 'stranger@unknown.com', 'subject' => 'hello', 'date' => '2026-07-02', 'body' => 'no provider here'],
+            'm3' => ['from' => 'no-reply@spotify.com', 'subject' => 'receipt', 'date' => '2026-07-03', 'body' => 'Charged $9.99 monthly.'],
+        ]);
+
+        $calls = [];
+        $scanner->scan($user, function (int $processed, int $total) use (&$calls) {
+            $calls[] = [$processed, $total];
+        });
+
+        // First call sets the total with zero processed; last call is all done.
+        $this->assertSame([0, 3], $calls[0]);
+        $this->assertSame([3, 3], end($calls));
+        // Processed increments once per message even for the unmatched one.
+        $this->assertSame([[0, 3], [1, 3], [2, 3], [3, 3]], $calls);
+    }
 }
