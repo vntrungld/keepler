@@ -6,6 +6,7 @@ import { computed } from 'vue';
 
 defineProps({
     subscriptions: { type: Array, default: () => [] },
+    gmail_connected: { type: Boolean, default: false },
 });
 
 const user = computed(() => usePage().props.auth.user);
@@ -20,12 +21,37 @@ const user = computed(() => usePage().props.auth.user);
                 <h2 class="text-xl font-semibold leading-tight text-gray-800">
                     Vũ trụ của bạn
                 </h2>
-                <Link
-                    :href="route('subscriptions.index')"
-                    class="text-sm text-indigo-600 hover:underline"
-                >
-                    Quản lý danh sách
-                </Link>
+                <div class="flex items-center gap-3 text-sm">
+                    <Link
+                        v-if="gmail_connected"
+                        :href="route('gmail.scan')"
+                        class="rounded-md bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-500"
+                    >
+                        Quét Gmail
+                    </Link>
+                    <a
+                        v-else
+                        :href="route('gmail.connect')"
+                        class="rounded-md bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-500"
+                    >
+                        Kết nối Gmail
+                    </a>
+                    <Link
+                        v-if="gmail_connected"
+                        :href="route('gmail.disconnect')"
+                        method="delete"
+                        as="button"
+                        class="text-gray-500 hover:underline"
+                    >
+                        Ngắt kết nối
+                    </Link>
+                    <Link
+                        :href="route('subscriptions.index')"
+                        class="text-indigo-600 hover:underline"
+                    >
+                        Quản lý danh sách
+                    </Link>
+                </div>
             </div>
         </template>
 

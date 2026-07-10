@@ -20,6 +20,7 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'subscriptions' => $subscriptions,
+            'gmail_connected' => $request->user()->hasGmailConnected(),
         ]);
     }
 }
