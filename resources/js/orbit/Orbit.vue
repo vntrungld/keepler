@@ -23,8 +23,11 @@ const ORBIT_MONTHLY = 150;
 const ORBIT_YEARLY = 300;
 const R_MIN = 12;
 const R_MAX = 40;
-const SPEED_MONTHLY = 6; // degrees per second
-const SPEED_YEARLY = 2.5;
+const SPEED_MONTHLY = 12; // degrees per second
+const SPEED_YEARLY = 5;
+// Under prefers-reduced-motion we slow the drift instead of freezing it —
+// the orbiting motion is the core content of this visualization.
+const REDUCED_MOTION_FACTOR = 0.3;
 
 const elapsed = ref(0); // seconds since mount, drives drift
 const reduceMotion = ref(false);
@@ -41,9 +44,8 @@ function frame(ts) {
 onMounted(() => {
     reduceMotion.value =
         window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-    if (!reduceMotion.value) {
-        rafId = requestAnimationFrame(frame);
-    }
+    // Always animate; reduce-motion only slows the drift (see buildOrbit).
+    rafId = requestAnimationFrame(frame);
 });
 
 onBeforeUnmount(() => {
@@ -63,7 +65,8 @@ const maxVnd = computed(() =>
 );
 
 function buildOrbit(list, orbitRadius, speed) {
-    const offset = reduceMotion.value ? 0 : elapsed.value * speed;
+    const offset =
+        elapsed.value * speed * (reduceMotion.value ? REDUCED_MOTION_FACTOR : 1);
     const angles = distributeAngles(list.length, offset);
     return list.map((sub, i) => {
         const pos = polarToXy(CENTER, CENTER, orbitRadius, angles[i]);
