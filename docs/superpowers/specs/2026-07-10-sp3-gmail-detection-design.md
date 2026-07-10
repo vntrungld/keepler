@@ -214,6 +214,17 @@ So mỗi candidate với gói hiện có của user theo `provider_key` + `billi
 
 ---
 
+## 11b. Lộ trình "tự động cập nhật khi hủy" (ngoài phạm vi SP3)
+
+**Giới hạn cốt lõi:** Orbit không có kết nối trực tiếp tới nhà cung cấp (Netflix…). Khi user hủy trên web của dịch vụ, tín hiệu **duy nhất** mà app bắt được là **email "đã hủy / membership ended"** nhà cung cấp gửi về Gmail. Do đó "biết user đã hủy" ⇒ phải đọc email đó ⇒ phải quét Gmail. Nguồn sự thật luôn là trường `status`; Orbit đọc `status` **live** mỗi lần tải dashboard (không phải ảnh chụp lúc quét), nên mọi thay đổi `status` tự phản ánh mà không cần quét lại.
+
+Ba mức độ tự động, làm dần:
+1. **SP3 (mục này) — Quét tay:** user bấm "Quét Gmail" → bắt mail hủy → cập nhật `status` → Orbit tự cập nhật. Chạy được local, không hạ tầng thêm.
+2. **SP4 — Quét ngầm định kỳ:** scheduler + queue/worker quét tự động (VD mỗi ngày), refresh token nền → user không cần bấm; trễ tối đa = chu kỳ quét. Đơn giản, chạy mọi nơi.
+3. **SP5+ — Gmail push (webhook qua Cloud Pub/Sub):** `users.watch` → Gmail đẩy thông báo vào Pub/Sub → push tới endpoint HTTPS của app → `users.history.list` lấy mail mới → cập nhật gần real-time. Cần deploy công khai (HTTPS) + Pub/Sub + xác thực push OIDC + gia hạn `watch` (≤7 ngày). Nâng cấp khi lên production.
+
+SP3 **không** hiện thực mức 2/3; chỉ ghi nhận lộ trình để kiến trúc (đặc biệt `SubscriptionScanner` + xử lý `cancellation` intent) tái dùng được cho các mức sau.
+
 ## 12. Tiêu chí hoàn thành SP3
 
 - Kết nối/ngắt Gmail hoạt động; token lưu mã hóa.
