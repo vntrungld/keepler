@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GmailController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Foundation\Application;
@@ -27,6 +28,10 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('subscriptions', SubscriptionController::class)
         ->except('show');
+
+    Route::get('/gmail/connect', [GmailController::class, 'connect'])->name('gmail.connect');
+    Route::get('/gmail/callback', [GmailController::class, 'callback'])->name('gmail.callback');
+    Route::delete('/gmail/disconnect', [GmailController::class, 'disconnect'])->name('gmail.disconnect');
 });
 
 require __DIR__.'/auth.php';
