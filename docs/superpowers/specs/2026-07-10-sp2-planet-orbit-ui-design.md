@@ -75,8 +75,9 @@ Mục tiêu SP2: từ dữ liệu subscription sẵn có, vẽ ra vũ trụ tư�
 
 ### 4.4 Kích thước hành tinh
 - Bán kính px của hành tinh suy từ `amount_vnd`, map vào `[R_MIN, R_MAX]`.
-- Dùng thang **căn bậc hai** (theo diện tích cảm nhận) và **kẹp** ở hai đầu để hành tinh rẻ không quá nhỏ, đắt không quá to.
-- Thang tương đối theo tập subscription đang hiển thị của user (min/max trong tập hiện tại) để luôn có độ tương phản hợp lý; nếu chỉ có 1 hành tinh → dùng kích thước giữa.
+- **Sàn kích thước bắt buộc:** `R_MIN` là một hằng số tuyệt đối (VD ~12px) để hành tinh **rẻ nhất vẫn đủ to để nhìn thấy và bấm được**, dù chênh lệch tiền lớn tới đâu. `planetRadius` **luôn** trả về `≥ R_MIN` (kẹp dưới cứng, không bao giờ nhỏ hơn). Tương tự có trần `R_MAX` để hành tinh đắt không lấn cả màn hình.
+- Dùng thang **căn bậc hai** (theo diện tích cảm nhận) giữa `R_MIN` và `R_MAX`.
+- Thang tương đối theo tập subscription đang hiển thị của user (min/max trong tập hiện tại) để luôn có độ tương phản hợp lý; nếu chỉ có 1 hành tinh, hoặc mọi hành tinh cùng giá → tất cả dùng kích thước giữa (vẫn `≥ R_MIN`).
 
 ### 4.5 Màu & nhận diện
 - **Catalog thương hiệu** `brandColors`: map **từ khóa trong tên** (chuẩn hóa lowercase, bỏ dấu/khoảng trắng) → mã màu. Ví dụ khởi tạo:
