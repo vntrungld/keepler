@@ -32,6 +32,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/gmail/connect', [GmailController::class, 'connect'])->name('gmail.connect');
     Route::get('/gmail/callback', [GmailController::class, 'callback'])->name('gmail.callback');
     Route::delete('/gmail/disconnect', [GmailController::class, 'disconnect'])->name('gmail.disconnect');
+    Route::get('/gmail/scan', [GmailController::class, 'scan'])->name('gmail.scan');
+    Route::post('/gmail/import', [GmailController::class, 'import'])->name('gmail.import');
 });
 
 require __DIR__.'/auth.php';
