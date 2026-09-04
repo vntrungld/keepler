@@ -1,0 +1,11 @@
+.vault-password
+.github
+.git
+Dockerfile
+docker-*.yml
+.gitlab-ci.yml
+.spin*
+.infrastructure
+!.infrastructure/**/local-ca.pem
+node_modules
+vendor

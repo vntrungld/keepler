@@ -29,6 +29,27 @@ In addition, [Laracasts](https://laracasts.com) contains thousands of video tuto
 
 You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
 
+## Local Development with Spin
+
+This project uses [Spin](https://serversideup.net/open-source/spin/) to run a Dockerized dev stack (PHP/Nginx, Traefik, Mailpit).
+
+**First-time setup (run once per git worktree, including this first checkout):**
+
+```bash
+cp .env.example .env
+./vendor/bin/spin up --build
+```
+
+If you use `git worktree` to work on several branches at once, run this in each additional worktree *before* `spin up`, so it gets its own ports and stays isolated from other worktrees' stacks on the shared Docker socket:
+
+```bash
+.infrastructure/scripts/spin-worktree-setup.sh
+```
+
+It assigns the worktree its own `COMPOSE_PROJECT_NAME`, Traefik/Mailpit host ports, and a scoped `.infrastructure/conf/traefik/dev/traefik.yml`, then prints the URLs to use. The original checkout can run it too (for an explicit config) but doesn't need to — it already works with the defaults (`http://localhost`, `https://localhost`, Mailpit on `:8025`).
+
+Common commands: `spin exec php php artisan migrate`, `spin exec node npm run dev`, `spin down`. See `.claude/skills/spin-laravel-development/SKILL.md` for the full reference.
+
 ## Agentic Development
 
 Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:

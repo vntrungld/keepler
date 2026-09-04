@@ -1,0 +1,53 @@
+services:
+  traefik:
+    ports:
+      - "${SPIN_HTTP_PORT:-80}:80"
+      - "${SPIN_HTTPS_PORT:-443}:443"
+    networks:
+      development:
+    volumes:
+      # Mount the Docker socket as read-only so Traefik can listen to events
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./.infrastructure/conf/traefik/dev/traefik.yml:/traefik.yml:ro
+      - ./.infrastructure/conf/traefik/dev/traefik-certs.yml:/traefik-certs.yml
+      - ./.infrastructure/conf/traefik/dev/certificates/:/certificates
+
+  php:
+    build:
+      target: development
+      args:
+        USER_ID: ${SPIN_USER_ID}
+        GROUP_ID: ${SPIN_GROUP_ID}
+    volumes:
+      - .:/var/www/html/
+    networks:
+      - development
+    depends_on:
+      - traefik
+    labels:
+      # Router/service names are namespaced with COMPOSE_PROJECT_NAME so that
+      # multiple worktrees (each its own Compose project, but sharing the same
+      # host Docker socket) don't merge into a single Traefik backend.
+      - "traefik.enable=true"
+      - "traefik.http.routers.laravel-${COMPOSE_PROJECT_NAME}.rule=HostRegexp(`localhost`)"
+      - "traefik.http.routers.laravel-${COMPOSE_PROJECT_NAME}.entrypoints=web"
+      - "traefik.http.services.laravel-${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=8080"
+      - "traefik.http.services.laravel-${COMPOSE_PROJECT_NAME}.loadbalancer.server.scheme=http"
+
+  node:
+    image: node:22
+    volumes:
+      - .:/usr/src/app/
+    working_dir: /usr/src/app/
+    networks:
+      - development
+
+  mailpit:
+    image: axllent/mailpit
+    networks:
+      - development
+    ports:
+      - "${SPIN_MAILPIT_PORT:-8025}:8025"
+
+networks:
+  development:

@@ -1,0 +1,28 @@
+# Allow self-signed certificates
+serversTransport:
+  insecureSkipVerify: true
+
+providers:
+  docker:
+    exposedByDefault: false
+    # Every worktree's Traefik shares the same host Docker socket, so
+    # without this constraint each instance would discover (and could
+    # route to) every other worktree's containers too. This is filled in
+    # per worktree by .infrastructure/scripts/spin-worktree-setup.sh.
+    constraints: "Label(`com.docker.compose.project`,`__COMPOSE_PROJECT_NAME__`)"
+  file:
+      filename: /traefik-certs.yml
+      watch: true
+entryPoints:
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+
+accessLog: {}
+log:
+  level: ERROR
+
+api:
+  dashboard: true
+  insecure: true
