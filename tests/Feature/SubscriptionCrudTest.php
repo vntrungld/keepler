@@ -151,4 +151,64 @@ class SubscriptionCrudTest extends TestCase
 
         $this->assertSame('personal', Subscription::first()->list);
     }
+
+    public function test_updating_the_amount_logs_a_price_changed_event(): void
+    {
+        $user = User::factory()->create();
+        $sub = Subscription::factory()->for($user)->create(['amount' => 9.99]);
+
+        $this->actingAs($user)->put("/subscriptions/{$sub->id}", [
+            'name' => $sub->name,
+            'amount' => 14.99,
+            'currency' => $sub->currency,
+            'billing_cycle' => $sub->billing_cycle,
+            'next_renewal_date' => $sub->next_renewal_date->toDateString(),
+            'status' => 'active',
+        ])->assertRedirect('/subscriptions');
+
+        $this->assertDatabaseHas('subscription_events', [
+            'subscription_id' => $sub->id,
+            'kind' => 'price_changed',
+        ]);
+    }
+
+    public function test_marking_active_as_cancelled_logs_a_cancelled_event(): void
+    {
+        $user = User::factory()->create();
+        $sub = Subscription::factory()->for($user)->create(['status' => 'active']);
+
+        $this->actingAs($user)->put("/subscriptions/{$sub->id}", [
+            'name' => $sub->name,
+            'amount' => $sub->amount,
+            'currency' => $sub->currency,
+            'billing_cycle' => $sub->billing_cycle,
+            'next_renewal_date' => $sub->next_renewal_date->toDateString(),
+            'status' => 'cancelled',
+        ])->assertRedirect('/subscriptions');
+
+        $this->assertDatabaseHas('subscription_events', [
+            'subscription_id' => $sub->id,
+            'kind' => 'cancelled',
+        ]);
+    }
+
+    public function test_storing_a_subscription_logs_a_subscribed_event(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post('/subscriptions', [
+            'name' => 'Netflix',
+            'amount' => 9.99,
+            'currency' => 'USD',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-08-01',
+            'status' => 'active',
+        ]);
+
+        $sub = Subscription::first();
+        $this->assertDatabaseHas('subscription_events', [
+            'subscription_id' => $sub->id,
+            'kind' => 'subscribed',
+        ]);
+    }
 }
