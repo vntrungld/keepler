@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\PaymentMethod;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -89,5 +90,65 @@ class SubscriptionCrudTest extends TestCase
 
         $this->actingAs($user)->delete("/subscriptions/{$sub->id}")->assertRedirect('/subscriptions');
         $this->assertDatabaseMissing('subscriptions', ['id' => $sub->id]);
+    }
+
+    public function test_user_can_store_a_subscription_with_the_new_optional_fields(): void
+    {
+        $user = User::factory()->create();
+        $method = PaymentMethod::factory()->for($user)->create();
+
+        $this->actingAs($user)->post('/subscriptions', [
+            'name' => 'Netflix',
+            'amount' => 9.99,
+            'currency' => 'USD',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-08-01',
+            'status' => 'active',
+            'list' => 'business',
+            'category' => 'Streaming',
+            'payment_method_id' => $method->id,
+            'is_trial' => true,
+            'started_at' => '2026-01-15',
+        ])->assertRedirect('/subscriptions');
+
+        $sub = Subscription::first();
+        $this->assertSame('business', $sub->list);
+        $this->assertSame('Streaming', $sub->category);
+        $this->assertSame($method->id, $sub->payment_method_id);
+        $this->assertTrue($sub->is_trial);
+        $this->assertSame('2026-01-15', $sub->started_at->toDateString());
+    }
+
+    public function test_a_users_payment_method_cannot_be_assigned_to_another_users_subscription(): void
+    {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $method = PaymentMethod::factory()->for($owner)->create();
+
+        $this->actingAs($other)->post('/subscriptions', [
+            'name' => 'Netflix',
+            'amount' => 9.99,
+            'currency' => 'USD',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-08-01',
+            'status' => 'active',
+            'payment_method_id' => $method->id,
+        ])->assertSessionHasErrors('payment_method_id');
+    }
+
+    public function test_list_defaults_to_personal_when_omitted(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post('/subscriptions', [
+            'name' => 'Netflix',
+            'amount' => 9.99,
+            'currency' => 'USD',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-08-01',
+            'status' => 'active',
+        ])->assertRedirect('/subscriptions');
+
+        $this->assertSame('personal', Subscription::first()->list);
     }
 }

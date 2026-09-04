@@ -13,6 +13,13 @@ class SubscriptionRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'list' => $this->input('list', 'personal'),
+        ]);
+    }
+
     public function rules(): array
     {
         return [
@@ -24,6 +31,16 @@ class SubscriptionRequest extends FormRequest
             'status' => ['required', Rule::in(['active', 'pending_cancel', 'cancelled'])],
             'cancel_url' => ['nullable', 'url', 'max:2048'],
             'notes' => ['nullable', 'string'],
+            'list' => ['required', Rule::in(['personal', 'business', 'family'])],
+            'category' => ['nullable', 'string', 'max:50'],
+            'payment_method_id' => [
+                'nullable',
+                Rule::exists('payment_methods', 'id')->where(
+                    fn ($query) => $query->where('user_id', $this->user()->id),
+                ),
+            ],
+            'is_trial' => ['boolean'],
+            'started_at' => ['nullable', 'date'],
         ];
     }
 }
