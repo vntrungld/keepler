@@ -112,15 +112,24 @@ const sunInitial = computed(() => initial(props.user?.name ?? ''));
 <template>
     <div class="relative mx-auto aspect-square w-full max-w-2xl">
         <svg :viewBox="`0 0 ${VIEW} ${VIEW}`" class="h-auto w-full">
+            <defs>
+                <radialGradient id="orbit-sun-gradient" cx="35%" cy="35%" r="75%">
+                    <stop offset="0%" stop-color="#fed7aa" />
+                    <stop offset="35%" stop-color="#fb923c" />
+                    <stop offset="70%" stop-color="#ec4899" />
+                    <stop offset="100%" stop-color="#a855f7" />
+                </radialGradient>
+            </defs>
+
             <circle
                 v-if="monthly.length"
                 :cx="CENTER"
                 :cy="CENTER"
                 :r="ORBIT_MONTHLY"
                 fill="none"
-                stroke="#CBD5E1"
+                stroke="#a78bfa"
                 stroke-width="1"
-                opacity="0.35"
+                opacity="0.25"
             />
             <circle
                 v-if="yearly.length"
@@ -128,13 +137,13 @@ const sunInitial = computed(() => initial(props.user?.name ?? ''));
                 :cy="CENTER"
                 :r="ORBIT_YEARLY"
                 fill="none"
-                stroke="#CBD5E1"
+                stroke="#a78bfa"
                 stroke-width="1"
-                opacity="0.35"
+                opacity="0.25"
             />
 
             <g>
-                <circle :cx="CENTER" :cy="CENTER" r="48" fill="#FCD34D" />
+                <circle :cx="CENTER" :cy="CENTER" r="48" fill="url(#orbit-sun-gradient)" />
                 <clipPath id="orbit-sun-clip">
                     <circle :cx="CENTER" :cy="CENTER" r="42" />
                 </clipPath>
@@ -155,7 +164,7 @@ const sunInitial = computed(() => initial(props.user?.name ?? ''));
                     text-anchor="middle"
                     dominant-baseline="central"
                     font-size="36"
-                    fill="#7C2D12"
+                    fill="#fff"
                     font-weight="700"
                 >
                     {{ sunInitial }}

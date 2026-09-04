@@ -88,7 +88,7 @@ onBeforeUnmount(stopPolling);
     <AuthenticatedLayout>
         <template #header>
             <div class="flex items-center justify-between">
-                <h2 class="text-xl font-semibold leading-tight text-gray-800">
+                <h2 class="text-2xl font-extrabold tracking-tight text-white">
                     Vũ trụ của bạn
                 </h2>
                 <div class="flex items-center gap-3 text-sm">
@@ -96,7 +96,7 @@ onBeforeUnmount(stopPolling);
                         v-if="gmail_connected"
                         type="button"
                         :disabled="scanning"
-                        class="rounded-md bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-500 disabled:opacity-60"
+                        class="rounded-lg bg-violet-600 px-3 py-2 text-white hover:bg-violet-500 disabled:opacity-60"
                         @click="startScan"
                     >
                         {{ scanning ? 'Đang quét…' : 'Quét Gmail' }}
@@ -104,7 +104,7 @@ onBeforeUnmount(stopPolling);
                     <a
                         v-else
                         :href="route('gmail.connect')"
-                        class="rounded-md bg-emerald-600 px-3 py-2 text-white hover:bg-emerald-500"
+                        class="rounded-lg bg-violet-600 px-3 py-2 text-white hover:bg-violet-500"
                     >
                         Kết nối Gmail
                     </a>
@@ -113,13 +113,13 @@ onBeforeUnmount(stopPolling);
                         :href="route('gmail.disconnect')"
                         method="delete"
                         as="button"
-                        class="text-gray-500 hover:underline"
+                        class="text-slate-500 hover:text-slate-300 hover:underline"
                     >
                         Ngắt kết nối
                     </Link>
                     <Link
                         :href="route('subscriptions.index')"
-                        class="text-indigo-600 hover:underline"
+                        class="text-violet-400 hover:text-violet-300 hover:underline"
                     >
                         Quản lý danh sách
                     </Link>
@@ -131,14 +131,14 @@ onBeforeUnmount(stopPolling);
             <div class="mx-auto max-w-5xl sm:px-6 lg:px-8">
                 <div
                     v-if="subscriptions.length === 0"
-                    class="rounded-lg bg-white p-12 text-center shadow-sm"
+                    class="rounded-2xl border border-white/5 bg-midnight-900 p-12 text-center shadow-lg shadow-black/20"
                 >
-                    <p class="text-gray-600">
+                    <p class="text-slate-400">
                         Chưa có dịch vụ nào trong vũ trụ của bạn.
                     </p>
                     <Link
                         :href="route('subscriptions.create')"
-                        class="mt-4 inline-block rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-500"
+                        class="mt-4 inline-block rounded-lg bg-violet-600 px-4 py-2 text-white hover:bg-violet-500"
                     >
                         Thêm dịch vụ đầu tiên
                     </Link>
@@ -146,7 +146,7 @@ onBeforeUnmount(stopPolling);
 
                 <template v-else>
                     <div
-                        class="rounded-lg bg-gradient-to-b from-slate-900 to-slate-800 p-4 shadow-sm"
+                        class="rounded-2xl border border-white/5 bg-gradient-to-b from-midnight-800 to-midnight-950 p-4 shadow-lg shadow-black/30"
                     >
                         <Orbit :subscriptions="subscriptions" :user="user" />
                     </div>
@@ -162,26 +162,26 @@ onBeforeUnmount(stopPolling);
                 class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm"
             >
                 <div
-                    class="mx-4 flex w-full max-w-sm flex-col gap-4 rounded-xl bg-white p-8 shadow-2xl"
+                    class="mx-4 flex w-full max-w-sm flex-col gap-4 rounded-2xl border border-white/10 bg-midnight-900 p-8 shadow-2xl"
                 >
                     <template v-if="!scanError">
                         <div class="flex items-center gap-3">
                             <span
-                                class="h-6 w-6 shrink-0 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"
+                                class="h-6 w-6 shrink-0 animate-spin rounded-full border-4 border-violet-500 border-t-transparent"
                             ></span>
-                            <p class="text-lg font-semibold text-gray-900">
+                            <p class="text-lg font-semibold text-white">
                                 Đang quét Gmail…
                             </p>
                         </div>
 
                         <div>
-                            <div class="h-2.5 w-full overflow-hidden rounded-full bg-gray-200">
+                            <div class="h-2.5 w-full overflow-hidden rounded-full bg-midnight-800">
                                 <div
-                                    class="h-full rounded-full bg-emerald-500 transition-all duration-300"
+                                    class="h-full rounded-full bg-violet-500 transition-all duration-300"
                                     :style="{ width: percent + '%' }"
                                 ></div>
                             </div>
-                            <p class="mt-2 text-center text-sm text-gray-500">
+                            <p class="mt-2 text-center text-sm text-slate-500">
                                 <template v-if="total > 0">
                                     Đang xử lý {{ processed }}/{{ total }} email — {{ percent }}%
                                 </template>
@@ -193,19 +193,19 @@ onBeforeUnmount(stopPolling);
                     </template>
 
                     <template v-else>
-                        <p class="text-lg font-semibold text-gray-900">Quét thất bại</p>
-                        <p class="text-sm text-gray-600">{{ scanError }}</p>
+                        <p class="text-lg font-semibold text-white">Quét thất bại</p>
+                        <p class="text-sm text-slate-400">{{ scanError }}</p>
                         <div class="flex justify-end gap-2">
                             <button
                                 type="button"
-                                class="rounded-md px-3 py-2 text-sm text-gray-600 hover:underline"
+                                class="rounded-lg px-3 py-2 text-sm text-slate-400 hover:underline"
                                 @click="closeScan"
                             >
                                 Đóng
                             </button>
                             <button
                                 type="button"
-                                class="rounded-md bg-emerald-600 px-3 py-2 text-sm text-white hover:bg-emerald-500"
+                                class="rounded-lg bg-violet-600 px-3 py-2 text-sm text-white hover:bg-violet-500"
                                 @click="startScan"
                             >
                                 Thử lại

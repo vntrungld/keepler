@@ -23,38 +23,38 @@ function destroy() {
 
 <template>
     <div
-        class="absolute right-0 top-0 z-20 flex h-full w-72 max-w-full flex-col gap-4 rounded-l-lg bg-white p-5 shadow-xl"
+        class="absolute right-0 top-0 z-20 flex h-full w-72 max-w-full flex-col gap-4 rounded-l-2xl border-l border-white/10 bg-midnight-900 p-5 shadow-2xl"
     >
         <div class="flex items-start justify-between">
-            <h3 class="text-lg font-semibold text-gray-900">{{ sub.name }}</h3>
+            <h3 class="text-lg font-semibold text-white">{{ sub.name }}</h3>
             <button
                 type="button"
-                class="text-gray-400 hover:text-gray-600"
+                class="text-slate-500 hover:text-slate-300"
                 @click="$emit('close')"
             >
                 ✕
             </button>
         </div>
 
-        <dl class="space-y-2 text-sm text-gray-700">
+        <dl class="space-y-2 text-sm text-slate-300">
             <div class="flex justify-between">
-                <dt class="text-gray-500">Số tiền</dt>
+                <dt class="text-slate-500">Số tiền</dt>
                 <dd>{{ sub.amount }} {{ sub.currency }}</dd>
             </div>
             <div class="flex justify-between">
-                <dt class="text-gray-500">Quy đổi</dt>
+                <dt class="text-slate-500">Quy đổi</dt>
                 <dd>{{ vnd }} ₫</dd>
             </div>
             <div class="flex justify-between">
-                <dt class="text-gray-500">Chu kỳ</dt>
+                <dt class="text-slate-500">Chu kỳ</dt>
                 <dd>{{ cycleLabel[sub.billing_cycle] ?? sub.billing_cycle }}</dd>
             </div>
             <div class="flex justify-between">
-                <dt class="text-gray-500">Gia hạn</dt>
+                <dt class="text-slate-500">Gia hạn</dt>
                 <dd>{{ sub.next_renewal_date?.slice(0, 10) }}</dd>
             </div>
             <div class="flex justify-between">
-                <dt class="text-gray-500">Trạng thái</dt>
+                <dt class="text-slate-500">Trạng thái</dt>
                 <dd>{{ statusLabel[sub.status] ?? sub.status }}</dd>
             </div>
         </dl>
@@ -62,7 +62,7 @@ function destroy() {
         <div class="mt-auto flex gap-2">
             <Link
                 :href="route('subscriptions.edit', sub.id)"
-                class="flex-1 rounded-md bg-indigo-600 px-3 py-2 text-center text-sm text-white hover:bg-indigo-500"
+                class="flex-1 rounded-lg bg-violet-600 px-3 py-2 text-center text-sm text-white hover:bg-violet-500"
             >
                 Sửa
             </Link>

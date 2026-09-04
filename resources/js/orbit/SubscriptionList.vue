@@ -8,9 +8,9 @@ defineProps({
 });
 
 const statusClass = {
-    active: 'bg-emerald-100 text-emerald-700',
-    pending_cancel: 'bg-amber-100 text-amber-700',
-    cancelled: 'bg-gray-100 text-gray-600',
+    active: 'bg-emerald-500/15 text-emerald-300',
+    pending_cancel: 'bg-amber-500/15 text-amber-300',
+    cancelled: 'bg-slate-500/15 text-slate-400',
 };
 
 const deletingId = ref(null);
@@ -41,12 +41,12 @@ function destroy(sub) {
         <li
             v-for="sub in subscriptions"
             :key="sub.id"
-            class="rounded-lg bg-white p-4 shadow-sm"
+            class="rounded-2xl border border-white/5 bg-midnight-900 p-4 shadow-lg shadow-black/10"
         >
             <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0">
-                    <p class="truncate font-semibold text-gray-900">{{ sub.name }}</p>
-                    <p class="mt-1 text-xs text-gray-500">{{ meta(sub) }}</p>
+                    <p class="truncate font-semibold text-slate-100">{{ sub.name }}</p>
+                    <p class="mt-1 text-xs text-slate-500">{{ meta(sub) }}</p>
                 </div>
                 <span
                     class="shrink-0 rounded-full px-2 py-1 text-xs font-medium"
@@ -59,7 +59,7 @@ function destroy(sub) {
             <div class="mt-3 flex gap-2">
                 <Link
                     :href="route('subscriptions.edit', sub.id)"
-                    class="flex-1 rounded-md bg-indigo-600 px-3 py-2 text-center text-sm text-white hover:bg-indigo-500"
+                    class="flex-1 rounded-lg bg-violet-600 px-3 py-2 text-center text-sm text-white hover:bg-violet-500"
                 >
                     Sửa
                 </Link>
