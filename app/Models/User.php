@@ -50,6 +50,14 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(GmailScan::class);
     }
 
+    /**
+     * @return HasMany<PaymentMethod, $this>
+     */
+    public function paymentMethods(): HasMany
+    {
+        return $this->hasMany(PaymentMethod::class);
+    }
+
     public function hasGmailConnected(): bool
     {
         return ! empty($this->gmail_refresh_token);
