@@ -6,6 +6,8 @@ use App\Support\CurrencyConverter;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 class Subscription extends Model
 {
@@ -21,12 +23,22 @@ class Subscription extends Model
         'status',
         'cancel_url',
         'notes',
+        'list',
+        'category',
+        'payment_method_id',
+        'is_trial',
+        'started_at',
     ];
+
+    protected $appends = ['subscribed_days', 'total_spent'];
 
     protected $casts = [
         'next_renewal_date' => 'date',
         'amount' => 'decimal:2',
         'amount_vnd' => 'integer',
+        'is_trial' => 'boolean',
+        'started_at' => 'date',
+        'last_reminder_sent_for' => 'date',
     ];
 
     protected static function booted(): void
@@ -42,5 +54,35 @@ class Subscription extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function paymentMethod(): BelongsTo
+    {
+        return $this->belongsTo(PaymentMethod::class);
+    }
+
+    public function events(): HasMany
+    {
+        return $this->hasMany(SubscriptionEvent::class)
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('id');
+    }
+
+    protected function startedAtOrCreatedAt(): Carbon
+    {
+        return $this->started_at ?? $this->created_at ?? now();
+    }
+
+    public function getSubscribedDaysAttribute(): int
+    {
+        return (int) $this->startedAtOrCreatedAt()->diffInDays(now());
+    }
+
+    public function getTotalSpentAttribute(): float
+    {
+        $cycleDays = $this->billing_cycle === 'yearly' ? 365 : 30;
+        $completedCycles = intdiv(max(0, $this->subscribed_days), $cycleDays);
+
+        return $completedCycles * (float) $this->amount;
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\PaymentMethod;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -59,5 +61,41 @@ class SubscriptionModelTest extends TestCase
         ]);
 
         $this->assertCount(1, $user->subscriptions);
+    }
+
+    public function test_subscribed_days_and_total_spent_are_computed_from_started_at(): void
+    {
+        $user = User::factory()->create();
+        $subscription = Subscription::factory()->for($user)->create([
+            'amount' => 100000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'started_at' => now()->subDays(65)->toDateString(),
+        ]);
+
+        $this->assertSame(65, $subscription->subscribed_days);
+        // 65 days / 30-day cycle = 2 completed cycles.
+        $this->assertSame(200000.0, $subscription->total_spent);
+    }
+
+    public function test_total_spent_is_zero_before_the_first_cycle_completes(): void
+    {
+        $user = User::factory()->create();
+        $subscription = Subscription::factory()->for($user)->create([
+            'amount' => 50000,
+            'currency' => 'VND',
+            'started_at' => now()->toDateString(),
+        ]);
+
+        $this->assertSame(0.0, $subscription->total_spent);
+    }
+
+    public function test_subscription_belongs_to_a_payment_method(): void
+    {
+        $user = User::factory()->create();
+        $method = PaymentMethod::factory()->for($user)->create();
+        $subscription = Subscription::factory()->for($user)->create(['payment_method_id' => $method->id]);
+
+        $this->assertTrue($subscription->paymentMethod->is($method));
     }
 }
