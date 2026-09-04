@@ -1,0 +1,22 @@
+{
+    "agents": [
+        "claude_code"
+    ],
+    "cloud": false,
+    "guidelines": true,
+    "mcp": true,
+    "nightwatch": false,
+    "packages": [
+        "serversideup/spin"
+    ],
+    "sail": false,
+    "skills": [
+        "infer-conventions",
+        "laravel-best-practices",
+        "testing-best-practices",
+        "socialite-development",
+        "inertia-vue-development",
+        "tailwindcss-development",
+        "spin-laravel-development"
+    ]
+}
