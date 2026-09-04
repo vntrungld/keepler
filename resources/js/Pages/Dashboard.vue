@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Orbit from '@/orbit/Orbit.vue';
+import SubscriptionList from '@/orbit/SubscriptionList.vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref } from 'vue';
 import axios from 'axios';
@@ -143,12 +144,15 @@ onBeforeUnmount(stopPolling);
                     </Link>
                 </div>
 
-                <div
-                    v-else
-                    class="rounded-lg bg-gradient-to-b from-slate-900 to-slate-800 p-4 shadow-sm"
-                >
-                    <Orbit :subscriptions="subscriptions" :user="user" />
-                </div>
+                <template v-else>
+                    <div
+                        class="rounded-lg bg-gradient-to-b from-slate-900 to-slate-800 p-4 shadow-sm"
+                    >
+                        <Orbit :subscriptions="subscriptions" :user="user" />
+                    </div>
+
+                    <SubscriptionList :subscriptions="subscriptions" class="mt-6" />
+                </template>
             </div>
         </div>
 

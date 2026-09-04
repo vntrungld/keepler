@@ -1,6 +1,7 @@
 <script setup>
 import { Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import { statusLabel, cycleLabel, formatVnd } from './labels.js';
 
 const props = defineProps({
     sub: { type: Object, required: true },
@@ -8,15 +9,7 @@ const props = defineProps({
 
 defineEmits(['close']);
 
-const vnd = computed(() =>
-    new Intl.NumberFormat('vi-VN').format(props.sub.amount_vnd),
-);
-
-const statusLabel = {
-    active: 'Đang hoạt động',
-    pending_cancel: 'Sắp hủy',
-    cancelled: 'Đã hủy',
-};
+const vnd = computed(() => formatVnd(props.sub.amount_vnd));
 
 const form = useForm({});
 
@@ -54,7 +47,7 @@ function destroy() {
             </div>
             <div class="flex justify-between">
                 <dt class="text-gray-500">Chu kỳ</dt>
-                <dd>{{ sub.billing_cycle === 'yearly' ? 'Hàng năm' : 'Hàng tháng' }}</dd>
+                <dd>{{ cycleLabel[sub.billing_cycle] ?? sub.billing_cycle }}</dd>
             </div>
             <div class="flex justify-between">
                 <dt class="text-gray-500">Gia hạn</dt>
