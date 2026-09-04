@@ -1,14 +1,9 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
+import SubscriptionList from '@/orbit/SubscriptionList.vue';
+import { Head, Link } from '@inertiajs/vue3';
 
 defineProps({ subscriptions: Array });
-
-function destroy(id) {
-    if (confirm('Xóa dịch vụ này?')) {
-        router.delete(`/subscriptions/${id}`);
-    }
-}
 </script>
 
 <template>
@@ -34,40 +29,20 @@ function destroy(id) {
                 <div class="mb-4 flex justify-end">
                     <Link
                         href="/subscriptions/create"
-                        class="rounded bg-indigo-600 px-3 py-2 text-white hover:bg-indigo-500"
+                        class="rounded-md bg-indigo-600 px-3 py-2 text-white hover:bg-indigo-500"
                     >
                         Thêm
                     </Link>
                 </div>
-                <div class="overflow-x-auto rounded-lg bg-white p-4 shadow-sm">
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="border-b">
-                                <th class="py-2">Tên</th>
-                                <th>Giá</th>
-                                <th>VND</th>
-                                <th>Chu kỳ</th>
-                                <th>Gia hạn</th>
-                                <th>Trạng thái</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="s in subscriptions" :key="s.id" class="border-b">
-                                <td class="py-2">{{ s.name }}</td>
-                                <td>{{ s.amount }} {{ s.currency }}</td>
-                                <td>{{ s.amount_vnd }}</td>
-                                <td>{{ s.billing_cycle }}</td>
-                                <td>{{ s.next_renewal_date }}</td>
-                                <td>{{ s.status }}</td>
-                                <td class="space-x-2">
-                                    <Link :href="`/subscriptions/${s.id}/edit`" class="text-indigo-600">Sửa</Link>
-                                    <button class="text-red-600" @click="destroy(s.id)">Xóa</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                <div
+                    v-if="subscriptions.length === 0"
+                    class="rounded-lg bg-white p-12 text-center shadow-sm"
+                >
+                    <p class="text-gray-600">Chưa có dịch vụ nào.</p>
                 </div>
+
+                <SubscriptionList v-else :subscriptions="subscriptions" />
             </div>
         </div>
     </AuthenticatedLayout>

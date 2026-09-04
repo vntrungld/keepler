@@ -4,17 +4,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GmailController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])

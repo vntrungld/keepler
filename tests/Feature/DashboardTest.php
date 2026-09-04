@@ -17,6 +17,20 @@ class DashboardTest extends TestCase
         $this->get('/dashboard')->assertRedirect(route('login'));
     }
 
+    public function test_guests_visiting_root_are_redirected_to_login(): void
+    {
+        $this->get('/')->assertRedirect(route('login'));
+    }
+
+    public function test_authenticated_users_visiting_root_are_redirected_to_dashboard(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/')
+            ->assertRedirect(route('dashboard'));
+    }
+
     public function test_dashboard_renders_only_the_current_users_non_cancelled_subscriptions(): void
     {
         $user = User::factory()->create();
