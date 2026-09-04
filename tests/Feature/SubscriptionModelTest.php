@@ -98,4 +98,27 @@ class SubscriptionModelTest extends TestCase
 
         $this->assertTrue($subscription->paymentMethod->is($method));
     }
+
+    public function test_subscribed_days_and_total_spent_fall_back_to_zero_when_started_at_and_created_at_are_not_selected(): void
+    {
+        $user = User::factory()->create();
+        Subscription::factory()->for($user)->create([
+            'amount' => 100000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'started_at' => now()->subDays(65)->toDateString(),
+        ]);
+
+        // Mirrors the shape DashboardController used before it started
+        // selecting started_at/created_at: neither column is present, so
+        // the model can't compute a real subscribed_days figure and must
+        // fall back to its last-resort `now()` guard instead of crashing.
+        $subscription = Subscription::query()->get([
+            'id', 'name', 'amount', 'currency', 'amount_vnd',
+            'billing_cycle', 'next_renewal_date', 'status',
+        ])->first();
+
+        $this->assertSame(0, $subscription->subscribed_days);
+        $this->assertSame(0.0, $subscription->total_spent);
+    }
 }

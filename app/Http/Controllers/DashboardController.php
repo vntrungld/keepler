@@ -16,6 +16,7 @@ class DashboardController extends Controller
             ->get([
                 'id', 'name', 'amount', 'currency', 'amount_vnd',
                 'billing_cycle', 'next_renewal_date', 'status',
+                'started_at', 'created_at',
             ]);
 
         return Inertia::render('Dashboard', [
