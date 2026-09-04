@@ -11,12 +11,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password', 'google_id', 'avatar'])]
+#[Fillable(['name', 'email', 'password', 'google_id', 'avatar', 'renewal_reminders_enabled', 'reminder_days_before'])]
 #[Hidden(['password', 'remember_token', 'gmail_access_token', 'gmail_refresh_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * The model's default attribute values.
+     *
+     * Mirrors the database column defaults so a freshly-created,
+     * in-memory instance reflects them before any reload from the
+     * database.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'renewal_reminders_enabled' => true,
+        'reminder_days_before' => 3,
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -31,6 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'gmail_access_token' => 'encrypted',
             'gmail_refresh_token' => 'encrypted',
             'gmail_token_expires_at' => 'datetime',
+            'renewal_reminders_enabled' => 'boolean',
         ];
     }
 
