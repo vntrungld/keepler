@@ -2,11 +2,13 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import Orbit from '@/orbit/Orbit.vue';
 import SubscriptionList from '@/orbit/SubscriptionList.vue';
+import { annualizedVnd } from '@/orbit/layout.js';
+import { formatVnd } from '@/orbit/labels.js';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, ref } from 'vue';
 import axios from 'axios';
 
-defineProps({
+const props = defineProps({
     subscriptions: { type: Array, default: () => [] },
     gmail_connected: { type: Boolean, default: false },
 });
@@ -20,6 +22,28 @@ const processed = ref(0);
 const total = ref(0);
 const percent = ref(0);
 let pollTimer = null;
+
+const listFilter = ref('all');
+const sortMode = ref('active');
+
+const filteredSubscriptions = computed(() => {
+    let list = props.subscriptions;
+    if (listFilter.value !== 'all') {
+        list = list.filter((s) => s.list === listFilter.value);
+    }
+    list = [...list];
+    if (sortMode.value === 'next') {
+        list.sort((a, b) => a.next_renewal_date.localeCompare(b.next_renewal_date));
+    } else {
+        const order = { active: 0, pending_cancel: 1, cancelled: 2 };
+        list.sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3));
+    }
+    return list;
+});
+
+const totalYearlyVnd = computed(() =>
+    filteredSubscriptions.value.reduce((sum, s) => sum + annualizedVnd(s), 0),
+);
 
 function resetScanState() {
     scanError.value = null;
@@ -145,13 +169,56 @@ onBeforeUnmount(stopPolling);
                 </div>
 
                 <template v-else>
-                    <div
-                        class="rounded-2xl border border-white/5 bg-gradient-to-b from-midnight-800 to-midnight-950 p-4 shadow-lg shadow-black/30"
-                    >
+                    <div class="relative rounded-2xl border border-white/5 bg-gradient-to-b from-midnight-800 to-midnight-950 p-4 shadow-lg shadow-black/30">
+                        <Link
+                            :href="route('subscriptions.create')"
+                            class="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 text-white shadow-lg hover:bg-violet-500"
+                            aria-label="Thêm dịch vụ"
+                        >
+                            +
+                        </Link>
                         <Orbit :subscriptions="subscriptions" :user="user" />
                     </div>
 
-                    <SubscriptionList :subscriptions="subscriptions" class="mt-6" />
+                    <div class="mt-6 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl font-extrabold text-white">{{ filteredSubscriptions.length }}</span>
+                            <select
+                                v-model="listFilter"
+                                class="rounded-lg border border-white/10 bg-midnight-800 px-2 py-1 text-sm text-slate-300 focus:border-violet-500 focus:ring-violet-500"
+                            >
+                                <option value="all">Tất cả</option>
+                                <option value="personal">Cá nhân</option>
+                                <option value="business">Công việc</option>
+                                <option value="family">Gia đình</option>
+                            </select>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-white">{{ formatVnd(totalYearlyVnd) }} ₫</p>
+                            <p class="text-xs text-slate-500">Tổng chi phí/năm</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex gap-2 text-sm">
+                        <button
+                            type="button"
+                            class="rounded-full px-3 py-1"
+                            :class="sortMode === 'active' ? 'bg-violet-600 text-white' : 'bg-midnight-800 text-slate-400'"
+                            @click="sortMode = 'active'"
+                        >
+                            Active
+                        </button>
+                        <button
+                            type="button"
+                            class="rounded-full px-3 py-1"
+                            :class="sortMode === 'next' ? 'bg-violet-600 text-white' : 'bg-midnight-800 text-slate-400'"
+                            @click="sortMode = 'next'"
+                        >
+                            Next
+                        </button>
+                    </div>
+
+                    <SubscriptionList :subscriptions="filteredSubscriptions" class="mt-4" />
                 </template>
             </div>
         </div>

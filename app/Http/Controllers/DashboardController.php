@@ -15,7 +15,7 @@ class DashboardController extends Controller
             ->orderBy('id')
             ->get([
                 'id', 'name', 'amount', 'currency', 'amount_vnd',
-                'billing_cycle', 'next_renewal_date', 'status',
+                'billing_cycle', 'next_renewal_date', 'status', 'list',
                 'started_at', 'created_at',
             ]);
 

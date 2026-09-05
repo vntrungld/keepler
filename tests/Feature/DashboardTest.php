@@ -61,7 +61,7 @@ class DashboardTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Dashboard')
                 ->has('subscriptions.0', fn (Assert $sub) => $sub
-                    ->hasAll(['id', 'name', 'amount', 'currency', 'amount_vnd', 'billing_cycle', 'next_renewal_date', 'status'])
+                    ->hasAll(['id', 'name', 'amount', 'currency', 'amount_vnd', 'billing_cycle', 'next_renewal_date', 'status', 'list'])
                     ->etc()
                 )
             );
