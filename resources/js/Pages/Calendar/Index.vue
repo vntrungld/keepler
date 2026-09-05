@@ -3,12 +3,13 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import BrandIcon from '@/orbit/BrandIcon.vue';
 import { formatVnd } from '@/orbit/labels.js';
 import { projectOccurrences, groupByDate, monthTotals } from '@/orbit/calendar.js';
+import { todayLocal } from '@/orbit/layout.js';
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 const props = defineProps({ subscriptions: { type: Array, default: () => [] } });
 
-const today = new Date().toISOString().slice(0, 10);
+const today = todayLocal();
 const now = new Date();
 const viewedYear = ref(now.getFullYear());
 const viewedMonth = ref(now.getMonth()); // 0-indexed

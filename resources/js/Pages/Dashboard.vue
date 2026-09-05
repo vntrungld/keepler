@@ -206,7 +206,7 @@ onBeforeUnmount(stopPolling);
                             :class="sortMode === 'active' ? 'bg-violet-600 text-white' : 'bg-midnight-800 text-slate-400'"
                             @click="sortMode = 'active'"
                         >
-                            Active
+                            Hoạt động
                         </button>
                         <button
                             type="button"
@@ -214,7 +214,7 @@ onBeforeUnmount(stopPolling);
                             :class="sortMode === 'next' ? 'bg-violet-600 text-white' : 'bg-midnight-800 text-slate-400'"
                             @click="sortMode = 'next'"
                         >
-                            Next
+                            Sắp tới
                         </button>
                     </div>
 
