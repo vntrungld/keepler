@@ -29,7 +29,7 @@ class CalendarTest extends TestCase
         $this->actingAs($user)
             ->get('/calendar')
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Calendar/Index', false)
+                ->component('Calendar/Index')
                 ->has('subscriptions', 1)
                 ->where('subscriptions.0.name', 'Netflix')
             );
