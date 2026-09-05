@@ -38,8 +38,14 @@ class SendRenewalReminders extends Command
                         continue;
                     }
 
-                    $subscription->user->notify(new SubscriptionRenewalReminder($subscription));
-                    $subscription->forceFill(['last_reminder_sent_for' => $subscription->next_renewal_date])->save();
+                    try {
+                        $subscription->user->notify(new SubscriptionRenewalReminder($subscription));
+                        $subscription->forceFill(['last_reminder_sent_for' => $subscription->next_renewal_date])->save();
+                    } catch (\Throwable $e) {
+                        report($e);
+
+                        continue;
+                    }
                 }
             });
 
