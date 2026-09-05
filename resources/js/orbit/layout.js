@@ -43,3 +43,7 @@ export function daysUntil(renewalDate, today) {
 export function isUrgent(days) {
     return days <= 7;
 }
+
+export function annualizedVnd(sub) {
+    return sub.billing_cycle === 'yearly' ? sub.amount_vnd : sub.amount_vnd * 12;
+}

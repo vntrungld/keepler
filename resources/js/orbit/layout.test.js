@@ -5,6 +5,7 @@ import {
     polarToXy,
     daysUntil,
     isUrgent,
+    annualizedVnd,
 } from './layout.js';
 
 describe('distributeAngles', () => {
@@ -98,5 +99,14 @@ describe('isUrgent', () => {
     it('is false beyond 7 days', () => {
         expect(isUrgent(8)).toBe(false);
         expect(isUrgent(30)).toBe(false);
+    });
+});
+
+describe('annualizedVnd', () => {
+    it('multiplies a monthly amount by 12', () => {
+        expect(annualizedVnd({ amount_vnd: 100000, billing_cycle: 'monthly' })).toBe(1200000);
+    });
+    it('returns a yearly amount unchanged', () => {
+        expect(annualizedVnd({ amount_vnd: 1200000, billing_cycle: 'yearly' })).toBe(1200000);
     });
 });
