@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,6 +37,21 @@ class ProfileController extends Controller
         }
 
         $request->user()->save();
+
+        return Redirect::route('profile.edit');
+    }
+
+    /**
+     * Update the user's renewal reminder preferences.
+     */
+    public function updateNotificationPreferences(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'renewal_reminders_enabled' => ['required', 'boolean'],
+            'reminder_days_before' => ['required', 'integer', Rule::in([1, 3, 7])],
+        ]);
+
+        $request->user()->update($validated);
 
         return Redirect::route('profile.edit');
     }

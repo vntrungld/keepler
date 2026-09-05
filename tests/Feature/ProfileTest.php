@@ -96,4 +96,32 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_user_can_update_notification_preferences(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->patch('/profile/notifications', [
+                'renewal_reminders_enabled' => false,
+                'reminder_days_before' => 7,
+            ])
+            ->assertRedirect('/profile');
+
+        $user->refresh();
+        $this->assertFalse($user->renewal_reminders_enabled);
+        $this->assertSame(7, $user->reminder_days_before);
+    }
+
+    public function test_reminder_days_before_must_be_one_of_the_allowed_options(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->patch('/profile/notifications', [
+                'renewal_reminders_enabled' => true,
+                'reminder_days_before' => 4,
+            ])
+            ->assertSessionHasErrors('reminder_days_before');
+    }
 }
