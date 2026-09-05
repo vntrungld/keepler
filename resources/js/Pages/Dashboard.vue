@@ -109,7 +109,26 @@ onBeforeUnmount(stopPolling);
 <template>
     <Head title="Dashboard" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout title="Vũ trụ của bạn">
+        <template #navActions>
+            <button
+                v-if="gmail_connected"
+                type="button"
+                :disabled="scanning"
+                class="rounded-lg bg-violet-600 px-3 py-1.5 text-sm text-white hover:bg-violet-500 disabled:opacity-60"
+                @click="startScan"
+            >
+                {{ scanning ? 'Đang quét…' : 'Quét Gmail' }}
+            </button>
+            <a
+                v-else
+                :href="route('gmail.connect')"
+                class="rounded-lg bg-violet-600 px-3 py-1.5 text-sm text-white hover:bg-violet-500"
+            >
+                Kết nối Gmail
+            </a>
+        </template>
+
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-2xl font-extrabold tracking-tight text-white">

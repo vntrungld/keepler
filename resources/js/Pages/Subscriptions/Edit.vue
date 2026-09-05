@@ -56,7 +56,7 @@ function submit() {
 <template>
     <Head title="Sửa dịch vụ" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout title="Sửa dịch vụ">
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-2xl font-extrabold tracking-tight text-white">Sửa dịch vụ</h2>

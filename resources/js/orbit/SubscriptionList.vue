@@ -35,21 +35,27 @@ function priceLabel(sub) {
         <li v-for="sub in subscriptions" :key="sub.id">
             <Link
                 :href="route('subscriptions.show', sub.id)"
-                class="flex items-center gap-3 rounded-2xl border border-white/5 bg-midnight-900 p-4 shadow-lg shadow-black/10 transition hover:border-white/10"
+                class="flex items-center gap-2 rounded-2xl border border-white/5 bg-midnight-900 p-4 shadow-lg shadow-black/10 transition hover:border-white/10 sm:gap-3"
             >
                 <BrandIcon :name="sub.name" :size="40" />
 
                 <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-2">
                         <p class="truncate font-semibold text-slate-100">{{ sub.name }}</p>
+                        <!--
+                            Only flag the states that need attention. An active
+                            subscription is the norm, and its badge would squeeze
+                            the name into an ellipsis on narrow screens.
+                        -->
                         <span
+                            v-if="sub.status !== 'active'"
                             class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
                             :class="statusClass[sub.status] ?? statusClass.cancelled"
                         >
                             {{ statusLabel[sub.status] ?? sub.status }}
                         </span>
                     </div>
-                    <p class="mt-1 text-xs text-slate-500">{{ renewsInLabel(sub) }}</p>
+                    <p class="mt-1 truncate text-xs text-slate-500">{{ renewsInLabel(sub) }}</p>
                 </div>
 
                 <div class="shrink-0 text-right">

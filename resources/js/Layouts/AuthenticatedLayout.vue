@@ -8,6 +8,14 @@ import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { Link } from '@inertiajs/vue3';
 
+/**
+ * `title` is shown inside the nav bar on mobile, where the separate page
+ * header band is hidden to save vertical space.
+ */
+defineProps({
+    title: { type: String, default: '' },
+});
+
 const showingNavigationDropdown = ref(false);
 </script>
 
@@ -19,15 +27,22 @@ const showingNavigationDropdown = ref(false);
             >
                 <!-- Primary Navigation Menu -->
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="flex h-16 justify-between">
-                        <div class="flex">
-                            <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
+                    <div class="flex h-16 justify-between gap-2">
+                        <div class="flex min-w-0 flex-1">
+                            <!-- Logo (desktop only — mobile shows the page title instead) -->
+                            <div class="hidden shrink-0 items-center sm:flex">
                                 <Link :href="route('dashboard')">
                                     <ApplicationLogo
                                         class="block h-9 w-auto fill-current text-violet-400"
                                     />
                                 </Link>
+                            </div>
+
+                            <!-- Page title, mobile only -->
+                            <div class="flex min-w-0 items-center sm:hidden">
+                                <h1 class="truncate text-xl font-extrabold tracking-tight text-white">
+                                    {{ title }}
+                                </h1>
                             </div>
 
                             <!-- Navigation Links -->
@@ -95,8 +110,9 @@ const showingNavigationDropdown = ref(false);
                             </div>
                         </div>
 
-                        <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
+                        <!-- Page actions + hamburger, mobile only -->
+                        <div class="-me-2 flex shrink-0 items-center gap-1 sm:hidden">
+                            <slot name="navActions" />
                             <button
                                 @click="
                                     showingNavigationDropdown =
@@ -159,6 +175,12 @@ const showingNavigationDropdown = ref(false);
                         >
                             Lịch
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('subscriptions.index')"
+                            :active="route().current('subscriptions.index')"
+                        >
+                            Quản lý danh sách
+                        </ResponsiveNavLink>
                     </div>
 
                     <!-- Responsive Settings Options -->
@@ -192,9 +214,9 @@ const showingNavigationDropdown = ref(false);
                 </div>
             </nav>
 
-            <!-- Page Heading -->
+            <!-- Page Heading (desktop only — on mobile the title lives in the nav) -->
             <header
-                class="border-b border-white/5 bg-midnight-900/60"
+                class="hidden border-b border-white/5 bg-midnight-900/60 sm:block"
                 v-if="$slots.header"
             >
                 <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">

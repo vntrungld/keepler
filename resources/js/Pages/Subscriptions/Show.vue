@@ -44,7 +44,16 @@ function destroy() {
 <template>
     <Head :title="subscription.name" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout :title="subscription.name">
+        <template #navActions>
+            <Link
+                :href="route('subscriptions.edit', subscription.id)"
+                class="rounded-lg bg-midnight-800 px-3 py-1.5 text-sm text-violet-300 hover:bg-midnight-700"
+            >
+                Sửa
+            </Link>
+        </template>
+
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-2xl font-extrabold tracking-tight text-white">{{ subscription.name }}</h2>

@@ -9,7 +9,7 @@ defineProps({ subscriptions: Array });
 <template>
     <Head title="Dịch vụ đăng ký" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout title="Dịch vụ đăng ký">
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-2xl font-extrabold tracking-tight text-white">

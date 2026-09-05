@@ -19,7 +19,7 @@ defineProps({
 <template>
     <Head title="Profile" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout title="Cài đặt">
         <template #header>
             <h2
                 class="text-2xl font-extrabold tracking-tight text-white"

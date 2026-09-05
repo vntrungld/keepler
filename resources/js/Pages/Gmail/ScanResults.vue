@@ -50,7 +50,7 @@ function gmailUrl(id) {
 <template>
     <Head title="Kết quả quét Gmail" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout title="Kết quả quét Gmail">
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-2xl font-extrabold tracking-tight text-white">

@@ -65,7 +65,7 @@ function goToToday() {
 <template>
     <Head title="Lịch gia hạn" />
 
-    <AuthenticatedLayout>
+    <AuthenticatedLayout title="Lịch gia hạn">
         <template #header>
             <h2 class="text-2xl font-extrabold tracking-tight text-white">Lịch gia hạn</h2>
         </template>
