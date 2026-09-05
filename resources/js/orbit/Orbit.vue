@@ -8,6 +8,7 @@ import {
     polarToXy,
     daysUntil,
     isUrgent,
+    todayLocal,
 } from './layout.js';
 import { brandColor, initial } from './brandColors.js';
 import PlanetTooltip from './PlanetTooltip.vue';
@@ -45,7 +46,7 @@ onBeforeUnmount(() => {
     if (rafId) cancelAnimationFrame(rafId);
 });
 
-const today = new Date().toISOString().slice(0, 10);
+const today = todayLocal();
 
 const amounts = computed(() =>
     props.subscriptions.map((s) => Number(s.amount_vnd)),

@@ -9,6 +9,7 @@ const props = defineProps({ subscription: Object, currencies: Array, paymentMeth
 const paymentMethodOptions = ref([...props.paymentMethods]);
 const newPaymentMethodLabel = ref('');
 const addingPaymentMethod = ref(false);
+const paymentMethodError = ref('');
 
 const authUser = computed(() => usePage().props.auth.user);
 
@@ -31,6 +32,7 @@ const form = useForm({
 async function addPaymentMethod() {
     if (!newPaymentMethodLabel.value.trim()) return;
     addingPaymentMethod.value = true;
+    paymentMethodError.value = '';
     try {
         const { data } = await axios.post(route('payment-methods.store'), {
             label: newPaymentMethodLabel.value.trim(),
@@ -38,6 +40,9 @@ async function addPaymentMethod() {
         paymentMethodOptions.value.push(data);
         form.payment_method_id = data.id;
         newPaymentMethodLabel.value = '';
+    } catch (error) {
+        paymentMethodError.value =
+            error.response?.data?.message ?? 'Không thể thêm phương thức thanh toán. Vui lòng thử lại.';
     } finally {
         addingPaymentMethod.value = false;
     }
@@ -136,6 +141,7 @@ function submit() {
                             + Thêm
                         </button>
                     </div>
+                    <p v-if="paymentMethodError" class="text-sm text-red-400">{{ paymentMethodError }}</p>
 
                     <label class="flex items-center gap-2 text-sm text-slate-300">
                         <input type="checkbox" v-model="form.is_trial" class="rounded border-white/20 bg-midnight-800 text-violet-500 focus:ring-violet-500" />

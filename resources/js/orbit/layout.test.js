@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
     distributeAngles,
     planetRadius,
@@ -6,6 +6,7 @@ import {
     daysUntil,
     isUrgent,
     annualizedVnd,
+    todayLocal,
 } from './layout.js';
 
 describe('distributeAngles', () => {
@@ -99,6 +100,30 @@ describe('isUrgent', () => {
     it('is false beyond 7 days', () => {
         expect(isUrgent(8)).toBe(false);
         expect(isUrgent(30)).toBe(false);
+    });
+});
+
+describe('todayLocal', () => {
+    const originalTz = process.env.TZ;
+
+    afterEach(() => {
+        vi.useRealTimers();
+        process.env.TZ = originalTz;
+    });
+
+    it('returns the local calendar date near a UTC day boundary, not the UTC date', () => {
+        // This app's users are in Asia/Ho_Chi_Minh (UTC+7). Pick an instant
+        // that is still 2026-02-28 in UTC but already 2026-03-01 locally, to
+        // prove the helper doesn't fall back to toISOString()'s UTC date.
+        process.env.TZ = 'Asia/Ho_Chi_Minh';
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-02-28T20:00:00Z'));
+
+        // Sanity check: the UTC-based approach we're guarding against would
+        // report the wrong (previous) day for this instant.
+        expect(new Date().toISOString().slice(0, 10)).toBe('2026-02-28');
+
+        expect(todayLocal()).toBe('2026-03-01');
     });
 });
 

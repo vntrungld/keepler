@@ -2,7 +2,7 @@
 import { Link } from '@inertiajs/vue3';
 import BrandIcon from './BrandIcon.vue';
 import { statusLabel, formatVnd } from './labels.js';
-import { daysUntil } from './layout.js';
+import { daysUntil, todayLocal } from './layout.js';
 
 defineProps({
     subscriptions: { type: Array, required: true },
@@ -14,7 +14,7 @@ const statusClass = {
     cancelled: 'bg-slate-500/15 text-slate-400',
 };
 
-const today = new Date().toISOString().slice(0, 10);
+const today = todayLocal();
 
 function renewsInLabel(sub) {
     const days = daysUntil(sub.next_renewal_date, today);
