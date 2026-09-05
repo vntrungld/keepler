@@ -22,7 +22,7 @@ const PALETTE = [
     '#3B82F6', '#8B5CF6', '#EF4444', '#14B8A6',
 ];
 
-function normalize(name) {
+export function normalize(name) {
     return (name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
