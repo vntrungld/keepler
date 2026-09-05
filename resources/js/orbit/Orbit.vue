@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { router } from '@inertiajs/vue3';
 import Planet from './Planet.vue';
 import {
     distributeAngles,
@@ -8,9 +9,8 @@ import {
     daysUntil,
     isUrgent,
 } from './layout.js';
-import { brandColor, contrastText, initial } from './brandColors.js';
+import { brandColor, initial } from './brandColors.js';
 import PlanetTooltip from './PlanetTooltip.vue';
-import OrbitDetailPanel from './OrbitDetailPanel.vue';
 
 const props = defineProps({
     subscriptions: { type: Array, required: true },
@@ -72,8 +72,6 @@ function buildOrbit(list, orbitRadius, speed) {
                 rMax: R_MAX,
             }),
             color,
-            textColor: contrastText(color),
-            letter: initial(sub.name),
             days: daysUntil(sub.next_renewal_date, today),
             urgent: isUrgent(daysUntil(sub.next_renewal_date, today)),
         };
@@ -97,13 +95,9 @@ const yearly = computed(() =>
 const planets = computed(() => [...monthly.value, ...yearly.value]);
 
 const hoveredId = ref(null);
-const selectedId = ref(null);
 
 const hoveredPlanet = computed(
     () => planets.value.find((p) => p.sub.id === hoveredId.value) ?? null,
-);
-const selectedSub = computed(
-    () => props.subscriptions.find((s) => s.id === selectedId.value) ?? null,
 );
 
 const sunInitial = computed(() => initial(props.user?.name ?? ''));
@@ -178,13 +172,11 @@ const sunInitial = computed(() => initial(props.user?.name ?? ''));
                 :cy="p.y"
                 :radius="p.radius"
                 :color="p.color"
-                :text-color="p.textColor"
-                :letter="p.letter"
                 :status="p.sub.status"
                 :urgent="p.urgent"
                 @hover="hoveredId = p.sub.id"
                 @leave="hoveredId = null"
-                @select="selectedId = p.sub.id"
+                @select="router.visit(route('subscriptions.show', p.sub.id))"
             />
         </svg>
 
@@ -194,12 +186,6 @@ const sunInitial = computed(() => initial(props.user?.name ?? ''));
             :days="hoveredPlanet.days"
             :left-pct="(hoveredPlanet.x / VIEW) * 100"
             :top-pct="(hoveredPlanet.y / VIEW) * 100"
-        />
-
-        <OrbitDetailPanel
-            v-if="selectedSub"
-            :sub="selectedSub"
-            @close="selectedId = null"
         />
     </div>
 </template>

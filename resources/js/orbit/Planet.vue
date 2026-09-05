@@ -4,8 +4,6 @@ defineProps({
     cy: { type: Number, required: true },
     radius: { type: Number, required: true },
     color: { type: String, required: true },
-    textColor: { type: String, required: true },
-    letter: { type: String, required: true },
     status: { type: String, required: true },
     urgent: { type: Boolean, default: false },
 });
@@ -39,18 +37,6 @@ const emit = defineEmits(['hover', 'leave', 'select']);
             stroke-width="2"
             stroke-dasharray="4 3"
         />
-        <text
-            :x="cx"
-            :y="cy"
-            :fill="textColor"
-            :font-size="radius"
-            text-anchor="middle"
-            dominant-baseline="central"
-            font-weight="700"
-            style="pointer-events: none; user-select: none"
-        >
-            {{ letter }}
-        </text>
     </g>
 </template>
 
