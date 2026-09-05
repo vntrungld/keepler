@@ -35,7 +35,23 @@ function toDateStr(date) {
     return date.toISOString().slice(0, 10);
 }
 
-const MAX_STEPS = 36;
+// Absolute guard so a corrupt or wildly distant next_renewal_date can never
+// make the projection loop run away — not the normal case, which is sized
+// per-subscription below from the actual distance to the viewed month.
+const ABSOLUTE_MAX_STEPS = 1200;
+
+function stepsToReachMonth(sub, year, monthIndex) {
+    const [ry, rm] = sub.next_renewal_date.slice(0, 10).split('-').map(Number);
+
+    const delta = sub.billing_cycle === 'yearly'
+        ? year - ry
+        : (year - ry) * 12 + (monthIndex - (rm - 1));
+
+    // +1 of headroom: a day-of-month clamp (e.g. Jan-31 -> Feb-28) never
+    // moves an occurrence into a different target month than `delta`
+    // predicts, but the margin keeps this robust to that edge case anyway.
+    return Math.min(Math.abs(delta) + 1, ABSOLUTE_MAX_STEPS);
+}
 
 export function projectOccurrences(subscriptions, year, monthIndex) {
     const monthStart = Date.UTC(year, monthIndex, 1);
@@ -47,9 +63,13 @@ export function projectOccurrences(subscriptions, year, monthIndex) {
 
         const lowerBound = sub.started_at
             ? Date.parse(`${sub.started_at.slice(0, 10)}T00:00:00Z`)
-            : -Infinity;
+            : sub.created_at
+                ? Date.parse(`${sub.created_at.slice(0, 10)}T00:00:00Z`)
+                : -Infinity;
 
-        for (let steps = -MAX_STEPS; steps <= MAX_STEPS; steps++) {
+        const maxSteps = stepsToReachMonth(sub, year, monthIndex);
+
+        for (let steps = -maxSteps; steps <= maxSteps; steps++) {
             const occurrence = addCycle(sub.next_renewal_date, sub.billing_cycle, steps);
             const ts = occurrence.getTime();
             if (ts < lowerBound) continue;

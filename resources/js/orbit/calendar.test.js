@@ -51,6 +51,17 @@ describe('projectOccurrences', () => {
         expect(projectOccurrences([startedLate], 2026, 6)).toHaveLength(1); // July, after start
     });
 
+    it('falls back to created_at as the lower bound when started_at is null', () => {
+        // Gmail-imported subscriptions (and any hand-created one where the
+        // optional "Bắt đầu từ" field was left blank) have started_at:
+        // null. Without the created_at fallback this projects a renewal
+        // into March even though the subscription did not exist yet.
+        const noStartedAt = { ...monthlySub, started_at: null, created_at: '2026-04-10T00:00:00.000000Z' };
+
+        expect(projectOccurrences([noStartedAt], 2026, 2)).toHaveLength(0); // March, before created_at
+        expect(projectOccurrences([noStartedAt], 2026, 3)).toHaveLength(1); // April, on/after created_at
+    });
+
     it('clamps a monthly end-of-month renewal to the target month length instead of overflowing', () => {
         const eomSub = { ...monthlySub, next_renewal_date: '2026-01-31' };
 
@@ -69,6 +80,22 @@ describe('projectOccurrences', () => {
         const febLeap = projectOccurrences([eomSub], 2028, 1); // February 2028 (leap year)
         expect(febLeap).toHaveLength(1);
         expect(febLeap[0].date).toBe('2028-02-29');
+    });
+
+    it('still projects a monthly subscription more than 36 months from the anchor renewal date', () => {
+        // Regression guard for unbounded month navigation (Item 3): the old
+        // fixed MAX_STEPS = 36 constant made a monthly subscription vanish
+        // from the grid once the user paged more than 36 months away from
+        // next_renewal_date. July 2030 is 50 months after 2026-05-15.
+        const occurrences = projectOccurrences([monthlySub], 2030, 6); // July 2030 (0-indexed)
+        expect(occurrences).toHaveLength(1);
+        expect(occurrences[0].date).toBe('2030-07-15');
+    });
+
+    it('still projects a yearly subscription more than 36 years from the anchor renewal date', () => {
+        const occurrences = projectOccurrences([yearlySub], 2066, 0); // January 2066, 40 years after 2026-01-26
+        expect(occurrences).toHaveLength(1);
+        expect(occurrences[0].date).toBe('2066-01-26');
     });
 
     it('clamps a yearly Feb-29 renewal to Feb-28 in a non-leap year', () => {
