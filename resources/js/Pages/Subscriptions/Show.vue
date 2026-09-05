@@ -81,7 +81,10 @@ function destroy() {
                     </div>
                     <div>
                         <dt class="text-slate-500">Đã chi</dt>
-                        <dd class="text-slate-100">{{ subscription.total_spent }} {{ subscription.currency }}</dd>
+                        <dd class="text-slate-100">
+                            <template v-if="subscription.currency === 'VND'">{{ formatVnd(subscription.total_spent) }} ₫</template>
+                            <template v-else>{{ subscription.total_spent }} {{ subscription.currency }}</template>
+                        </dd>
                     </div>
                     <div>
                         <dt class="text-slate-500">Đã đăng ký</dt>

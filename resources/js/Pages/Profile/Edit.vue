@@ -29,7 +29,7 @@ defineProps({
         </template>
 
         <div class="py-12">
-            <div class="mx-auto max-w-7xl space-y-6 sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
                 <div
                     class="rounded-2xl border border-white/5 bg-midnight-900 p-4 shadow-lg shadow-black/20 sm:p-8"
                 >

@@ -152,7 +152,7 @@ onBeforeUnmount(stopPolling);
         </template>
 
         <div class="py-8">
-            <div class="mx-auto max-w-5xl sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                 <div
                     v-if="subscriptions.length === 0"
                     class="rounded-2xl border border-white/5 bg-midnight-900 p-12 text-center shadow-lg shadow-black/20"

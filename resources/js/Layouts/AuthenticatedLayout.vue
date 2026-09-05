@@ -38,13 +38,13 @@ const showingNavigationDropdown = ref(false);
                                     :href="route('dashboard')"
                                     :active="route().current('dashboard')"
                                 >
-                                    Dashboard
+                                    Dịch vụ
                                 </NavLink>
                                 <NavLink
                                     :href="route('calendar.index')"
                                     :active="route().current('calendar.index')"
                                 >
-                                    Calendar
+                                    Lịch
                                 </NavLink>
                             </div>
                         </div>
@@ -81,7 +81,7 @@ const showingNavigationDropdown = ref(false);
                                         <DropdownLink
                                             :href="route('profile.edit')"
                                         >
-                                            Profile
+                                            Cài đặt
                                         </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
@@ -151,13 +151,13 @@ const showingNavigationDropdown = ref(false);
                             :href="route('dashboard')"
                             :active="route().current('dashboard')"
                         >
-                            Dashboard
+                            Dịch vụ
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('calendar.index')"
                             :active="route().current('calendar.index')"
                         >
-                            Calendar
+                            Lịch
                         </ResponsiveNavLink>
                     </div>
 
@@ -178,7 +178,7 @@ const showingNavigationDropdown = ref(false);
 
                         <div class="mt-3 space-y-1">
                             <ResponsiveNavLink :href="route('profile.edit')">
-                                Profile
+                                Cài đặt
                             </ResponsiveNavLink>
                             <ResponsiveNavLink
                                 :href="route('logout')"
