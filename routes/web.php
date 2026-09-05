@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GmailController;
+use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::resource('subscriptions', SubscriptionController::class);
+
+    Route::post('/payment-methods', [PaymentMethodController::class, 'store'])->name('payment-methods.store');
 
     Route::get('/gmail/connect', [GmailController::class, 'connect'])->name('gmail.connect');
     Route::get('/gmail/callback', [GmailController::class, 'callback'])->name('gmail.callback');
