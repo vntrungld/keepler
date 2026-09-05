@@ -24,6 +24,7 @@ const textColor = computed(() => contrastText(color.value));
     >
         <svg
             v-if="icon"
+            aria-hidden="true"
             viewBox="0 0 24 24"
             :width="size * 0.6"
             :height="size * 0.6"

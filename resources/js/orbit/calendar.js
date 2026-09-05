@@ -1,12 +1,34 @@
 // Pure date-projection math for the Calendar page. No DOM, no Vue —
 // unit-tested in calendar.test.js.
 
+function daysInMonth(year, monthIndex0) {
+    // Day 0 of the *next* month is the last day of monthIndex0 — leap
+    // years are handled natively by the Date engine.
+    return new Date(Date.UTC(year, monthIndex0 + 1, 0)).getUTCDate();
+}
+
 function addCycle(dateStr, cycle, steps) {
     const [y, m, d] = dateStr.slice(0, 10).split('-').map(Number);
+
+    // Resolve the target year/month using day 1 (always valid, so this
+    // never overflows) before touching the original day-of-month. Then
+    // clamp that day to the target month's length — standard "billed on
+    // the Nth, clamped to month end" billing semantics — so e.g. a
+    // Jan-31 monthly renewal lands on Feb 28/29, Apr 30, etc., instead of
+    // silently rolling into the following month.
+    let targetYear;
+    let targetMonthIndex0;
     if (cycle === 'yearly') {
-        return new Date(Date.UTC(y + steps, m - 1, d));
+        targetYear = y + steps;
+        targetMonthIndex0 = m - 1;
+    } else {
+        const base = new Date(Date.UTC(y, m - 1 + steps, 1));
+        targetYear = base.getUTCFullYear();
+        targetMonthIndex0 = base.getUTCMonth();
     }
-    return new Date(Date.UTC(y, m - 1 + steps, d));
+    const clampedDay = Math.min(d, daysInMonth(targetYear, targetMonthIndex0));
+
+    return new Date(Date.UTC(targetYear, targetMonthIndex0, clampedDay));
 }
 
 function toDateStr(date) {

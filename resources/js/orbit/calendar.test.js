@@ -50,6 +50,34 @@ describe('projectOccurrences', () => {
         expect(projectOccurrences([startedLate], 2026, 3)).toHaveLength(0); // April, before start
         expect(projectOccurrences([startedLate], 2026, 6)).toHaveLength(1); // July, after start
     });
+
+    it('clamps a monthly end-of-month renewal to the target month length instead of overflowing', () => {
+        const eomSub = { ...monthlySub, next_renewal_date: '2026-01-31' };
+
+        const feb = projectOccurrences([eomSub], 2026, 1); // February 2026 (28 days)
+        expect(feb).toHaveLength(1);
+        expect(feb[0].date).toBe('2026-02-28');
+
+        const mar = projectOccurrences([eomSub], 2026, 2); // March 2026
+        expect(mar).toHaveLength(1);
+        expect(mar[0].date).toBe('2026-03-31'); // no fabricated 2026-03-03 artifact
+
+        const apr = projectOccurrences([eomSub], 2026, 3); // April 2026 (30 days)
+        expect(apr).toHaveLength(1);
+        expect(apr[0].date).toBe('2026-04-30');
+
+        const febLeap = projectOccurrences([eomSub], 2028, 1); // February 2028 (leap year)
+        expect(febLeap).toHaveLength(1);
+        expect(febLeap[0].date).toBe('2028-02-29');
+    });
+
+    it('clamps a yearly Feb-29 renewal to Feb-28 in a non-leap year', () => {
+        const leapYearlySub = { ...yearlySub, next_renewal_date: '2028-02-29' };
+
+        const nonLeap = projectOccurrences([leapYearlySub], 2027, 1); // February 2027 (non-leap)
+        expect(nonLeap).toHaveLength(1);
+        expect(nonLeap[0].date).toBe('2027-02-28');
+    });
 });
 
 describe('groupByDate', () => {
