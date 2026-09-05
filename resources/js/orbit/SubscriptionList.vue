@@ -1,7 +1,8 @@
 <script setup>
-import { Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
-import { statusLabel, cycleLabel, formatVnd } from './labels.js';
+import { Link } from '@inertiajs/vue3';
+import BrandIcon from './BrandIcon.vue';
+import { statusLabel, formatVnd } from './labels.js';
+import { daysUntil } from './layout.js';
 
 defineProps({
     subscriptions: { type: Array, required: true },
@@ -13,65 +14,56 @@ const statusClass = {
     cancelled: 'bg-slate-500/15 text-slate-400',
 };
 
-const deletingId = ref(null);
+const today = new Date().toISOString().slice(0, 10);
 
-function meta(sub) {
-    const amount = `${sub.amount} ${sub.currency}`;
-    const converted =
-        sub.currency !== 'VND' ? ` (${formatVnd(sub.amount_vnd)} ₫)` : '';
-    const cycle = cycleLabel[sub.billing_cycle] ?? sub.billing_cycle;
-    const renewal = sub.next_renewal_date?.slice(0, 10);
-
-    return `${amount}${converted} · ${cycle} · gia hạn ${renewal}`;
+function renewsInLabel(sub) {
+    const days = daysUntil(sub.next_renewal_date, today);
+    const date = sub.next_renewal_date?.slice(0, 10);
+    if (days < 0) return `Quá hạn ${Math.abs(days)} ngày · ${date}`;
+    if (days === 0) return `Tới hạn hôm nay · ${date}`;
+    return `Còn ${days} ngày · ${date}`;
 }
 
-function destroy(sub) {
-    if (!confirm(`Xóa "${sub.name}"?`)) return;
-
-    deletingId.value = sub.id;
-    router.delete(route('subscriptions.destroy', sub.id), {
-        preserveScroll: true,
-        onFinish: () => (deletingId.value = null),
-    });
+function priceLabel(sub) {
+    if (sub.currency === 'VND') return `${formatVnd(sub.amount_vnd)} ₫`;
+    return `${sub.amount} ${sub.currency}`;
 }
 </script>
 
 <template>
     <ul class="space-y-3">
-        <li
-            v-for="sub in subscriptions"
-            :key="sub.id"
-            class="rounded-2xl border border-white/5 bg-midnight-900 p-4 shadow-lg shadow-black/10"
-        >
-            <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0">
-                    <p class="truncate font-semibold text-slate-100">{{ sub.name }}</p>
-                    <p class="mt-1 text-xs text-slate-500">{{ meta(sub) }}</p>
-                </div>
-                <span
-                    class="shrink-0 rounded-full px-2 py-1 text-xs font-medium"
-                    :class="statusClass[sub.status] ?? statusClass.cancelled"
-                >
-                    {{ statusLabel[sub.status] ?? sub.status }}
-                </span>
-            </div>
+        <li v-for="sub in subscriptions" :key="sub.id">
+            <Link
+                :href="route('subscriptions.show', sub.id)"
+                class="flex items-center gap-3 rounded-2xl border border-white/5 bg-midnight-900 p-4 shadow-lg shadow-black/10 transition hover:border-white/10"
+            >
+                <BrandIcon :name="sub.name" :size="40" />
 
-            <div class="mt-3 flex gap-2">
-                <Link
-                    :href="route('subscriptions.edit', sub.id)"
-                    class="flex-1 rounded-lg bg-violet-600 px-3 py-2 text-center text-sm text-white hover:bg-violet-500"
-                >
-                    Sửa
-                </Link>
-                <button
-                    type="button"
-                    class="flex-1 rounded-md bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-500 disabled:opacity-50"
-                    :disabled="deletingId === sub.id"
-                    @click="destroy(sub)"
-                >
-                    Xóa
-                </button>
-            </div>
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2">
+                        <p class="truncate font-semibold text-slate-100">{{ sub.name }}</p>
+                        <span
+                            class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
+                            :class="statusClass[sub.status] ?? statusClass.cancelled"
+                        >
+                            {{ statusLabel[sub.status] ?? sub.status }}
+                        </span>
+                    </div>
+                    <p class="mt-1 text-xs text-slate-500">{{ renewsInLabel(sub) }}</p>
+                </div>
+
+                <div class="shrink-0 text-right">
+                    <p class="font-semibold text-slate-100">{{ priceLabel(sub) }}</p>
+                </div>
+
+                <svg class="h-5 w-5 shrink-0 text-slate-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path
+                        fill-rule="evenodd"
+                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                        clip-rule="evenodd"
+                    />
+                </svg>
+            </Link>
         </li>
     </ul>
 </template>
