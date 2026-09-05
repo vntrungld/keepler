@@ -27,14 +27,7 @@ class SubscriptionController extends Controller
 
     public function store(SubscriptionRequest $request)
     {
-        $subscription = $request->user()->subscriptions()->create($request->validated());
-
-        $subscription->events()->create([
-            'kind' => 'subscribed',
-            'amount' => $subscription->amount,
-            'currency' => $subscription->currency,
-            'occurred_at' => $subscription->started_at?->toDateString() ?? now()->toDateString(),
-        ]);
+        $request->user()->subscriptions()->create($request->validated());
 
         return redirect('/subscriptions');
     }
@@ -65,26 +58,7 @@ class SubscriptionController extends Controller
     {
         $this->authorize('update', $subscription);
 
-        $originalAmount = (float) $subscription->amount;
-        $originalStatus = $subscription->status;
-
         $subscription->update($request->validated());
-
-        if ((float) $subscription->amount !== $originalAmount) {
-            $subscription->events()->create([
-                'kind' => 'price_changed',
-                'amount' => $subscription->amount,
-                'currency' => $subscription->currency,
-                'occurred_at' => now()->toDateString(),
-            ]);
-        }
-
-        if ($originalStatus !== 'cancelled' && $subscription->status === 'cancelled') {
-            $subscription->events()->create([
-                'kind' => 'cancelled',
-                'occurred_at' => now()->toDateString(),
-            ]);
-        }
 
         return redirect('/subscriptions');
     }

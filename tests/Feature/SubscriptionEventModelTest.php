@@ -29,7 +29,10 @@ class SubscriptionEventModelTest extends TestCase
             'occurred_at' => now()->toDateString(),
         ]);
 
-        $ids = $subscription->events()->pluck('id')->all();
+        // Scope to just the two events created in this test: creating the
+        // subscription itself now also logs an auto 'subscribed' event (see
+        // Subscription::booted()), which this ordering test isn't about.
+        $ids = $subscription->events()->whereIn('id', [$older->id, $newer->id])->pluck('id')->all();
         $this->assertSame([$newer->id, $older->id], $ids);
     }
 }

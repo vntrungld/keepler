@@ -211,4 +211,55 @@ class SubscriptionCrudTest extends TestCase
             'kind' => 'subscribed',
         ]);
     }
+
+    public function test_storing_a_subscription_logs_the_subscribed_event_exactly_once(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post('/subscriptions', [
+            'name' => 'Netflix',
+            'amount' => 9.99,
+            'currency' => 'USD',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-08-01',
+            'status' => 'active',
+        ]);
+
+        $sub = Subscription::first();
+        $this->assertSame(1, $sub->events()->where('kind', 'subscribed')->count());
+    }
+
+    public function test_updating_the_amount_logs_the_price_changed_event_exactly_once(): void
+    {
+        $user = User::factory()->create();
+        $sub = Subscription::factory()->for($user)->create(['amount' => 9.99]);
+
+        $this->actingAs($user)->put("/subscriptions/{$sub->id}", [
+            'name' => $sub->name,
+            'amount' => 14.99,
+            'currency' => $sub->currency,
+            'billing_cycle' => $sub->billing_cycle,
+            'next_renewal_date' => $sub->next_renewal_date->toDateString(),
+            'status' => 'active',
+        ])->assertRedirect('/subscriptions');
+
+        $this->assertSame(1, $sub->events()->where('kind', 'price_changed')->count());
+    }
+
+    public function test_marking_active_as_cancelled_logs_the_cancelled_event_exactly_once(): void
+    {
+        $user = User::factory()->create();
+        $sub = Subscription::factory()->for($user)->create(['status' => 'active']);
+
+        $this->actingAs($user)->put("/subscriptions/{$sub->id}", [
+            'name' => $sub->name,
+            'amount' => $sub->amount,
+            'currency' => $sub->currency,
+            'billing_cycle' => $sub->billing_cycle,
+            'next_renewal_date' => $sub->next_renewal_date->toDateString(),
+            'status' => 'cancelled',
+        ])->assertRedirect('/subscriptions');
+
+        $this->assertSame(1, $sub->events()->where('kind', 'cancelled')->count());
+    }
 }

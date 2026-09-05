@@ -49,6 +49,33 @@ class Subscription extends Model
                 $subscription->currency,
             );
         });
+
+        static::created(function (Subscription $subscription) {
+            $subscription->events()->create([
+                'kind' => 'subscribed',
+                'amount' => $subscription->amount,
+                'currency' => $subscription->currency,
+                'occurred_at' => $subscription->started_at?->toDateString() ?? now()->toDateString(),
+            ]);
+        });
+
+        static::updated(function (Subscription $subscription) {
+            if ($subscription->wasChanged('amount')) {
+                $subscription->events()->create([
+                    'kind' => 'price_changed',
+                    'amount' => $subscription->amount,
+                    'currency' => $subscription->currency,
+                    'occurred_at' => now()->toDateString(),
+                ]);
+            }
+
+            if ($subscription->wasChanged('status') && $subscription->status === 'cancelled') {
+                $subscription->events()->create([
+                    'kind' => 'cancelled',
+                    'occurred_at' => now()->toDateString(),
+                ]);
+            }
+        });
     }
 
     public function user(): BelongsTo

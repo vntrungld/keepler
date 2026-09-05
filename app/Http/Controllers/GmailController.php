@@ -112,9 +112,12 @@ class GmailController extends Controller
                 ]);
             } elseif ($item['action'] === 'update_status' && ! empty($item['duplicate_of'])) {
                 // Scope to the user's own subscriptions — a foreign id simply finds nothing.
+                // Update the model instance (rather than a mass update()) so
+                // Subscription's model event hooks fire and log a 'cancelled' event.
                 $user->subscriptions()
                     ->whereKey($item['duplicate_of'])
-                    ->update(['status' => 'cancelled']);
+                    ->get()
+                    ->each(fn ($subscription) => $subscription->update(['status' => 'cancelled']));
             }
         }
 
