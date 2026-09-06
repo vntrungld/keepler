@@ -1,0 +1,74 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# The database lives on Neon, not Render: Render's free Postgres is deleted 30
+# days after creation, while Neon's free tier has no expiry. Point DB_URL at the
+# Neon connection string.
+#
+# Values marked `sync: false` are never stored in this file — set them in the
+# Render dashboard under Environment.
+services:
+  - type: web
+    name: keepler
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /up
+    envVars:
+      # serversideup/php serves NGINX on 8080 when SSL_MODE is off. Render
+      # terminates TLS at its edge, so the container speaks plain HTTP.
+      - key: PORT
+        value: "8080"
+      - key: SSL_MODE
+        value: "off"
+
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      # php artisan key:generate --show
+      - key: APP_KEY
+        sync: false
+      # https://keepler.onrender.com — set once Render assigns the hostname.
+      - key: APP_URL
+        sync: false
+
+      # Neon connection string, e.g.
+      # postgresql://user:pass@ep-xxx.ap-southeast-1.aws.neon.tech/keepler?sslmode=require
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        sync: false
+      - key: DB_SSLMODE
+        value: require
+
+      # No Redis: the app keeps cache, sessions and queues in Postgres.
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+
+      # Laravel automations in serversideup/php: migrate, then cache config,
+      # routes, events and views on boot.
+      - key: AUTORUN_ENABLED
+        value: "true"
+      - key: HEALTHCHECK_PATH
+        value: /up
+      - key: PHP_OPCACHE_ENABLE
+        value: "1"
+
+      # Render collects stdout/stderr; writing to storage/logs would be lost on
+      # every restart anyway, since the free plan has no persistent disk.
+      - key: LOG_CHANNEL
+        value: stderr
+
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      # https://keepler.onrender.com/auth/google/callback
+      - key: GOOGLE_REDIRECT_URI
+        sync: false

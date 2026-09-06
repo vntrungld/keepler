@@ -9,3 +9,12 @@ docker-*.yml
 !.infrastructure/**/local-ca.pem
 node_modules
 vendor
+
+# Never bake local environment files or build output into the image. The local
+# .env would otherwise ship real secrets and override the host's env vars.
+.env
+.env.*
+public/build
+public/hot
+public/storage
+.phpunit.result.cache
