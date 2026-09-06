@@ -65,6 +65,11 @@ services:
       - key: LOG_CHANNEL
         value: stderr
 
+      # Shared secret for the X-Cron-Token header. The free plan runs no cron,
+      # so an external scheduler posts to /cron/renewal-reminders daily.
+      - key: CRON_TOKEN
+        sync: false
+
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET

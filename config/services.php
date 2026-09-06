@@ -41,4 +41,8 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
     ],
 
+    'cron' => [
+        'token' => env('CRON_TOKEN'),
+    ],
+
 ];

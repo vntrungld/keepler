@@ -19,7 +19,11 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
-        //
+        // The external scheduler has no session to carry a CSRF token; these
+        // routes authenticate with the X-Cron-Token header instead.
+        $middleware->validateCsrfTokens(except: [
+            'cron/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

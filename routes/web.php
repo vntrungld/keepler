@@ -1,16 +1,22 @@
 <?php
 
 use App\Http\Controllers\CalendarController;
+use App\Http\Controllers\CronController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GmailController;
 use App\Http\Controllers\PaymentMethodController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Middleware\VerifyCronToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 });
+
+Route::post('/cron/renewal-reminders', [CronController::class, 'renewalReminders'])
+    ->middleware(VerifyCronToken::class)
+    ->name('cron.renewal-reminders');
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
