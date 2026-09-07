@@ -102,4 +102,12 @@ COPY --from=assets --chown=www-data:www-data /app/public/build /var/www/html/pub
 RUN mkdir -p /var/www/html/.infrastructure/volume_data/sqlite/ && \
     chown -R www-data:www-data /var/www/html/.infrastructure/volume_data/sqlite/
 
+# Supervise `queue:work` next to NGINX and PHP-FPM. Render's free plan has no
+# Background Workers, so without this nothing drains the database queue and
+# ScanGmailJob never runs. See .infrastructure/s6-rc.d/README.md.
+USER root
+COPY .infrastructure/s6-rc.d/queue-worker /etc/s6-overlay/s6-rc.d/queue-worker
+RUN chmod +x /etc/s6-overlay/s6-rc.d/queue-worker/run && \
+    touch /etc/s6-overlay/s6-rc.d/user/contents.d/queue-worker
+
 USER www-data

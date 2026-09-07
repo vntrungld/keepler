@@ -1,0 +1,9 @@
+#!/command/execlineb -P
+with-contenv
+cd /var/www/html
+/usr/local/bin/php artisan queue:work
+  --queue=default
+  --sleep=5
+  --tries=1
+  --timeout=280
+  --max-time=3600

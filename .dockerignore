@@ -7,6 +7,9 @@ docker-*.yml
 .spin*
 .infrastructure
 !.infrastructure/**/local-ca.pem
+# The deploy stage installs this s6 service, so it has to reach the build context.
+!.infrastructure/s6-rc.d
+!.infrastructure/s6-rc.d/**
 node_modules
 vendor
 

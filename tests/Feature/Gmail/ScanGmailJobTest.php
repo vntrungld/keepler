@@ -71,4 +71,17 @@ class ScanGmailJobTest extends TestCase
         $this->assertStringNotContainsString('boom', $fresh->error);
         $this->assertStringNotContainsString('401', $fresh->error);
     }
+
+    public function test_failed_handler_marks_a_killed_scan_as_failed(): void
+    {
+        $user = $this->connectedUser();
+        $scan = $user->gmailScans()->create(['status' => 'running']);
+
+        (new ScanGmailJob($scan))->failed(new \RuntimeException('worker timed out'));
+
+        $fresh = $scan->fresh();
+        $this->assertSame('failed', $fresh->status);
+        $this->assertNotNull($fresh->error);
+        $this->assertStringNotContainsString('worker timed out', $fresh->error);
+    }
 }

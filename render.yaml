@@ -50,6 +50,11 @@ services:
         value: database
       - key: QUEUE_CONNECTION
         value: database
+      # The queue worker rides inside the web container (Render's free plan has
+      # no Background Workers) and runs with --timeout=280, so the queue must
+      # wait longer than that before handing the same job to another worker.
+      - key: DB_QUEUE_RETRY_AFTER
+        value: "300"
 
       # Laravel automations in serversideup/php: migrate, then cache config,
       # routes, events and views on boot.
