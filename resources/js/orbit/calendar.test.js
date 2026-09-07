@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { projectOccurrences, groupByDate, monthTotals } from './calendar.js';
+import { projectOccurrences, groupByDate, monthTotals, dayLogos, MAX_DAY_LOGOS } from './calendar.js';
 
 const monthlySub = {
     id: 1,
@@ -138,5 +138,31 @@ describe('monthTotals', () => {
 
     it('upcoming equals total when every occurrence is still ahead', () => {
         expect(monthTotals(occurrences, '2026-03-01').upcoming).toBe(300000);
+    });
+});
+
+describe('dayLogos', () => {
+    const occ = (id) => ({ date: '2026-04-15', subscription: { id, name: `Sub ${id}` } });
+
+    it('returns no logos for an empty day', () => {
+        expect(dayLogos([])).toEqual({ shown: [], overflow: 0 });
+    });
+
+    it('shows one logo per subscription while they all fit', () => {
+        const result = dayLogos([occ(1), occ(2), occ(3)], 3);
+        expect(result.shown.map((sub) => sub.id)).toEqual([1, 2, 3]);
+        expect(result.overflow).toBe(0);
+    });
+
+    it('gives up the last slot to a "+N" count once the day overflows', () => {
+        const result = dayLogos([occ(1), occ(2), occ(3), occ(4), occ(5)], 3);
+        expect(result.shown.map((sub) => sub.id)).toEqual([1, 2]);
+        expect(result.overflow).toBe(3);
+    });
+
+    it('never renders more slots than the cap allows', () => {
+        const many = Array.from({ length: 12 }, (_, i) => occ(i));
+        const result = dayLogos(many);
+        expect(result.shown.length + 1).toBeLessThanOrEqual(MAX_DAY_LOGOS);
     });
 });

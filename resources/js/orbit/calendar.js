@@ -104,3 +104,23 @@ export function monthTotals(occurrences, today) {
 
     return { total, upcoming };
 }
+
+// Calendar cells are small, so a day can only show a handful of brand
+// logos. Past that, the last slot becomes a "+N" badge instead of another
+// logo, so the row width stays constant no matter how busy the day is.
+export const MAX_DAY_LOGOS = 3;
+
+export function dayLogos(occurrences, max = MAX_DAY_LOGOS) {
+    const subscriptions = occurrences.map((occ) => occ.subscription);
+
+    if (subscriptions.length <= max) {
+        return { shown: subscriptions, overflow: 0 };
+    }
+
+    const visible = max - 1;
+
+    return {
+        shown: subscriptions.slice(0, visible),
+        overflow: subscriptions.length - visible,
+    };
+}

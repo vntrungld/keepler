@@ -2,10 +2,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import BrandIcon from '@/orbit/BrandIcon.vue';
 import { formatVnd } from '@/orbit/labels.js';
-import { projectOccurrences, groupByDate, monthTotals } from '@/orbit/calendar.js';
+import { projectOccurrences, groupByDate, monthTotals, dayLogos } from '@/orbit/calendar.js';
 import { todayLocal } from '@/orbit/layout.js';
 import { Head, Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 
 const props = defineProps({ subscriptions: { type: Array, default: () => [] } });
 
@@ -33,13 +33,35 @@ const weeks = computed(() => {
     for (let i = 0; i < leadingBlanks; i++) cells.push(null);
     for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = new Date(Date.UTC(viewedYear.value, viewedMonth.value, day)).toISOString().slice(0, 10);
-        cells.push({ day, dateStr, occurrences: grouped.value[dateStr] ?? [] });
+        const occurrences = grouped.value[dateStr] ?? [];
+        cells.push({ day, dateStr, occurrences, logos: dayLogos(occurrences) });
     }
     while (cells.length % 7 !== 0) cells.push(null);
 
     const rows = [];
     for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7));
     return rows;
+});
+
+// Grid cells are ~50px wide on a phone but ~95px on the sm+ layout, so the
+// day's logo row scales with the breakpoint rather than leaving wide cells
+// sparse or overflowing narrow ones.
+const wideViewport = ref(false);
+const logoSize = computed(() => (wideViewport.value ? 20 : 14));
+
+let viewportQuery = null;
+function syncViewport(event) {
+    wideViewport.value = event.matches;
+}
+
+onMounted(() => {
+    viewportQuery = window.matchMedia('(min-width: 640px)');
+    wideViewport.value = viewportQuery.matches;
+    viewportQuery.addEventListener('change', syncViewport);
+});
+
+onBeforeUnmount(() => {
+    viewportQuery?.removeEventListener('change', syncViewport);
 });
 
 const selectedDate = ref(null);
@@ -95,7 +117,7 @@ function goToToday() {
                             v-for="(cell, ci) in week"
                             :key="ci"
                             type="button"
-                            class="flex h-14 flex-col items-center justify-center gap-0.5 border-b border-r border-white/5 text-sm"
+                            class="flex h-16 flex-col items-center justify-center gap-1 border-b border-r border-white/5 text-sm sm:h-20"
                             :class="[
                                 !cell && 'bg-midnight-950/40',
                                 cell?.dateStr === today && 'bg-violet-500/10',
@@ -105,14 +127,22 @@ function goToToday() {
                             @click="selectedDate = cell.dateStr"
                         >
                             <template v-if="cell">
-                                <span class="text-slate-300">{{ cell.day }}</span>
-                                <span v-if="cell.occurrences.length" class="flex gap-0.5">
-                                    <span
-                                        v-for="occ in cell.occurrences.slice(0, 3)"
-                                        :key="occ.subscription.id"
-                                        class="h-1.5 w-1.5 rounded-full bg-violet-400"
+                                <span class="leading-none text-slate-300">{{ cell.day }}</span>
+                                <span v-if="cell.occurrences.length" class="flex items-center gap-0.5">
+                                    <BrandIcon
+                                        v-for="sub in cell.logos.shown"
+                                        :key="sub.id"
+                                        :name="sub.name"
+                                        :size="logoSize"
                                     />
+                                    <span
+                                        v-if="cell.logos.overflow"
+                                        class="inline-flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-full bg-midnight-700 px-0.5 text-[9px] font-bold leading-none text-slate-300 sm:h-5 sm:min-w-[1.25rem] sm:px-1 sm:text-[11px]"
+                                    >
+                                        +{{ cell.logos.overflow }}
+                                    </span>
                                 </span>
+                                <span v-else class="h-3.5 sm:h-5" />
                             </template>
                         </button>
                     </div>

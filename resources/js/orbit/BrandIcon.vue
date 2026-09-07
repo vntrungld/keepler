@@ -11,6 +11,9 @@ const props = defineProps({
 const icon = computed(() => resolveBrandIcon(props.name));
 const color = computed(() => brandColor(props.name));
 const textColor = computed(() => contrastText(color.value));
+// Keep the fallback letter proportional so the same component reads well at
+// the 14-20px sizes used inside calendar cells and at the 32px+ list sizes.
+const initialFontSize = computed(() => `${Math.round(props.size * 0.45)}px`);
 </script>
 
 <template>
@@ -32,7 +35,7 @@ const textColor = computed(() => contrastText(color.value));
         >
             <path :d="icon.path" />
         </svg>
-        <span v-else class="text-sm font-bold" :style="{ color: textColor }">
+        <span v-else class="font-bold leading-none" :style="{ color: textColor, fontSize: initialFontSize }">
             {{ initial(name) }}
         </span>
     </span>
