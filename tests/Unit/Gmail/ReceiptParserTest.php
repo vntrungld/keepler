@@ -201,4 +201,68 @@ class ReceiptParserTest extends TestCase
 
         $this->assertTrue($result['is_receipt']);
     }
+
+    public function test_total_line_wins_but_subtotal_does_not_masquerade_as_it(): void
+    {
+        $result = ReceiptParser::parse(
+            $this->netflix,
+            'Your Netflix receipt',
+            "Netflix Premium\nSubtotal $20.00\nTax $2.00\nTotal $22.00",
+            '2026-07-01',
+        );
+
+        $this->assertSame(22.00, $result['amount']);
+    }
+
+    public function test_a_stray_mention_of_years_does_not_make_the_cycle_yearly(): void
+    {
+        $result = ReceiptParser::parse(
+            $this->netflix,
+            'Your Netflix receipt',
+            "Thanks for being with us over the years.\nTotal $12.99",
+            '2026-07-01',
+        );
+
+        $this->assertSame('monthly', $result['billing_cycle']);
+        $this->assertSame('2026-08-01', $result['next_renewal_date']);
+    }
+
+    public function test_a_real_yearly_plan_is_still_detected(): void
+    {
+        $result = ReceiptParser::parse(
+            $this->netflix,
+            'Your Netflix receipt',
+            "Annual plan\nTotal $129.99",
+            '2026-07-01',
+        );
+
+        $this->assertSame('yearly', $result['billing_cycle']);
+    }
+
+    public function test_boilerplate_about_how_to_cancel_does_not_turn_a_receipt_into_a_cancellation(): void
+    {
+        $result = ReceiptParser::parse(
+            config('providers.google'),
+            'Your Google Play Order Receipt',
+            "Google One\nTotal ₫146.667\nBy subscribing, you authorize us to charge you the "
+                ."subscription cost (as described above) automatically, charged to the payment "
+                ."method provided until canceled. Learn how to cancel. Keep this for your records.",
+            '2026-08-01',
+        );
+
+        $this->assertSame('payment', $result['intent']);
+        $this->assertSame(146667.0, $result['amount']);
+    }
+
+    public function test_an_actual_cancellation_notice_is_still_detected(): void
+    {
+        $result = ReceiptParser::parse(
+            config('providers.google'),
+            'Your Google One membership has been canceled',
+            'Your membership ended. You can resubscribe at any time.',
+            '2026-08-01',
+        );
+
+        $this->assertSame('cancellation', $result['intent']);
+    }
 }

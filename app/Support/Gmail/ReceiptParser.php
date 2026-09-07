@@ -7,28 +7,55 @@ use Illuminate\Support\Carbon;
 class ReceiptParser
 {
     /**
-     * Best-effort extraction of a subscription candidate's fields from one email.
-     *
-     * @param  array  $provider  one catalog entry from config('providers')
-     * @return array{intent:string,amount:?float,currency:?string,billing_cycle:string,next_renewal_date:?string,confidence:array<string,bool>}
+     * Phrases that mark a yearly billing cycle. Matched on word boundaries, so
+     * a passing mention ("thanks for being with us over the years") no longer
+     * turns a monthly charge into a yearly one. The Vietnamese entries are
+     * deliberately whole phrases: bare "năm" also means "five" and appears in
+     * every written date, which made it fire on almost any Vietnamese receipt.
      */
+    private const YEARLY_KEYWORDS = [
+        'year', 'yearly', 'annual', 'annually',
+        'hàng năm', 'mỗi năm', 'theo năm', 'một năm', '1 năm', '12 tháng',
+    ];
+
+    /**
+     * Conditional phrasings that mention cancelling without announcing one.
+     *
+     * Every Google Play receipt carries "...charged to the payment method
+     * provided until canceled. Learn how to cancel.", and a bare search for
+     * "canceled" turned each of those payment receipts into a cancellation.
+     * These are stripped before intent is decided.
+     */
+    private const CANCELLATION_BOILERPLATE = [
+        '/until\s+(?:you\s+)?cancell?ed/iu',
+        '/unless\s+(?:you\s+)?cancell?ed/iu',
+        '/how\s+to\s+cancel/iu',
+        '/cancel\s+(?:at\s+)?any\s?time/iu',
+    ];
+
     /** Receipt keywords (English + Vietnamese) that signal a real payment email. */
     private const RECEIPT_KEYWORDS = [
         'receipt', 'order', 'invoice', 'charged', 'payment',
         'hóa đơn', 'biên nhận', 'đã thanh toán', 'thanh toán',
     ];
 
+    /**
+     * Best-effort extraction of a subscription candidate's fields from one email.
+     *
+     * @param  array  $provider  one catalog entry from config('providers')
+     * @return array{intent:string,amount:?float,currency:?string,billing_cycle:string,next_renewal_date:?string,confidence:array<string,bool>}
+     */
     public static function parse(array $provider, string $subject, string $body, string $emailDate): array
     {
         $text = strtolower($subject."\n".$body);
 
-        $intent = self::matchesAny($text, $provider['cancellation_keywords'] ?? [])
+        $intent = self::matchesAny(self::withoutCancellationBoilerplate($text), $provider['cancellation_keywords'] ?? [])
             ? 'cancellation'
             : 'payment';
 
         [$amount, $currency] = self::extractAmount($subject."\n".$body, $provider);
 
-        $isYearly = self::matchesAny($text, ['year', 'yearly', 'annual', 'annually', 'năm']);
+        $isYearly = self::matchesAnyWord($text, self::YEARLY_KEYWORDS);
         $cycle = $isYearly ? 'yearly' : ($provider['default_cycle'] ?? 'monthly');
 
         $renewal = null;
@@ -88,7 +115,7 @@ class ReceiptParser
                 $firstMatch = $match;
             }
 
-            if ($totalMatch === null && preg_match('/total|tổng/i', $line)) {
+            if ($totalMatch === null && self::isTotalLine($line)) {
                 $totalMatch = $match;
             }
         }
@@ -174,6 +201,48 @@ class ReceiptParser
         }
 
         return is_numeric($s) ? (float) $s : null;
+    }
+
+    /**
+     * Drop the conditional "until canceled" style phrasings so only a genuine
+     * announcement of a cancellation is left to match against.
+     */
+    private static function withoutCancellationBoilerplate(string $text): string
+    {
+        return preg_replace(self::CANCELLATION_BOILERPLATE, ' ', $text) ?? $text;
+    }
+
+    /**
+     * Whether a line states the amount actually charged.
+     *
+     * The word must not be glued to a preceding letter, or "Subtotal" counts as
+     * a total. Because the first matching line wins and a subtotal always sits
+     * above the real total, that misread the pre-tax figure on every invoice
+     * carrying tax.
+     */
+    private static function isTotalLine(string $line): bool
+    {
+        return (bool) preg_match('/(?<!\p{L})(?:total|tổng)/iu', $line);
+    }
+
+    /**
+     * Like matchesAny(), but each needle must stand as its own word rather than
+     * appear inside a longer one.
+     */
+    private static function matchesAnyWord(string $haystackLower, array $needles): bool
+    {
+        foreach ($needles as $needle) {
+            if ($needle === '') {
+                continue;
+            }
+
+            $pattern = '/(?<!\p{L})'.preg_quote(strtolower($needle), '/').'(?!\p{L})/iu';
+            if (preg_match($pattern, $haystackLower)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static function matchesAny(string $haystackLower, array $needles): bool
