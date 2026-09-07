@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import DeleteUserForm from './Partials/DeleteUserForm.vue';
+import GmailConnectionForm from './Partials/GmailConnectionForm.vue';
 import NotificationPreferencesForm from './Partials/NotificationPreferencesForm.vue';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm.vue';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm.vue';
@@ -12,6 +13,10 @@ defineProps({
     },
     status: {
         type: String,
+    },
+    gmail_connected: {
+        type: Boolean,
+        default: false,
     },
 });
 </script>
@@ -44,6 +49,15 @@ defineProps({
                     class="rounded-2xl border border-white/5 bg-midnight-900 p-4 shadow-lg shadow-black/20 sm:p-8"
                 >
                     <NotificationPreferencesForm class="max-w-xl" />
+                </div>
+
+                <div
+                    class="rounded-2xl border border-white/5 bg-midnight-900 p-4 shadow-lg shadow-black/20 sm:p-8"
+                >
+                    <GmailConnectionForm
+                        :gmail-connected="gmail_connected"
+                        class="max-w-xl"
+                    />
                 </div>
 
                 <div

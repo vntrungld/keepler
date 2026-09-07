@@ -1,12 +1,13 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import GmailScanProgress from '@/orbit/GmailScanProgress.vue';
 import Orbit from '@/orbit/Orbit.vue';
 import SubscriptionList from '@/orbit/SubscriptionList.vue';
 import { annualizedVnd } from '@/orbit/layout.js';
 import { formatVnd } from '@/orbit/labels.js';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { computed, onBeforeUnmount, ref } from 'vue';
-import axios from 'axios';
+import { useGmailScan } from '@/orbit/useGmailScan.js';
+import { Head, Link, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     subscriptions: { type: Array, default: () => [] },
@@ -15,13 +16,7 @@ const props = defineProps({
 
 const user = computed(() => usePage().props.auth.user);
 
-// Background scan + polling state.
-const scanning = ref(false);
-const scanError = ref(null);
-const processed = ref(0);
-const total = ref(0);
-const percent = ref(0);
-let pollTimer = null;
+const { scanning, scanError, processed, total, percent, startScan, closeScan } = useGmailScan();
 
 const listFilter = ref('all');
 const sortMode = ref('active');
@@ -45,128 +40,23 @@ const totalYearlyVnd = computed(() =>
     filteredSubscriptions.value.reduce((sum, s) => sum + annualizedVnd(s), 0),
 );
 
-function resetScanState() {
-    scanError.value = null;
-    processed.value = 0;
-    total.value = 0;
-    percent.value = 0;
-}
-
-async function startScan() {
-    scanning.value = true;
-    resetScanState();
-
-    try {
-        const { data } = await axios.post(route('gmail.scans.store'));
-        pollScan(data.id);
-    } catch (e) {
-        if (e.response?.status === 409 && e.response.data?.connect_url) {
-            window.location.href = e.response.data.connect_url;
-            return;
-        }
-        scanError.value = 'Không bắt đầu quét được. Vui lòng thử lại.';
-    }
-}
-
-function pollScan(id) {
-    pollTimer = setInterval(async () => {
-        try {
-            const { data } = await axios.get(route('gmail.scans.show', id));
-            processed.value = data.processed;
-            total.value = data.total;
-            percent.value = data.percent;
-
-            if (data.status === 'done') {
-                stopPolling();
-                router.visit(route('gmail.scans.results', id));
-            } else if (data.status === 'failed') {
-                stopPolling();
-                scanError.value =
-                    'Quét Gmail thất bại. Vui lòng thử kết nối lại và quét lại.';
-            }
-        } catch (e) {
-            stopPolling();
-            scanError.value = 'Mất kết nối khi theo dõi tiến trình.';
-        }
-    }, 1000);
-}
-
-function stopPolling() {
-    if (pollTimer) {
-        clearInterval(pollTimer);
-        pollTimer = null;
-    }
-}
-
-function closeScan() {
-    stopPolling();
-    scanning.value = false;
-}
-
-onBeforeUnmount(stopPolling);
 </script>
 
 <template>
     <Head title="Dashboard" />
 
     <AuthenticatedLayout title="Vũ trụ của bạn">
-        <template #navActions>
-            <button
-                v-if="gmail_connected"
-                type="button"
-                :disabled="scanning"
-                class="rounded-lg bg-violet-600 px-3 py-1.5 text-sm text-white hover:bg-violet-500 disabled:opacity-60"
-                @click="startScan"
-            >
-                {{ scanning ? 'Đang quét…' : 'Quét Gmail' }}
-            </button>
-            <a
-                v-else
-                :href="route('gmail.connect')"
-                class="rounded-lg bg-violet-600 px-3 py-1.5 text-sm text-white hover:bg-violet-500"
-            >
-                Kết nối Gmail
-            </a>
-        </template>
-
         <template #header>
             <div class="flex items-center justify-between">
                 <h2 class="text-2xl font-extrabold tracking-tight text-white">
                     Vũ trụ của bạn
                 </h2>
-                <div class="flex items-center gap-3 text-sm">
-                    <button
-                        v-if="gmail_connected"
-                        type="button"
-                        :disabled="scanning"
-                        class="rounded-lg bg-violet-600 px-3 py-2 text-white hover:bg-violet-500 disabled:opacity-60"
-                        @click="startScan"
-                    >
-                        {{ scanning ? 'Đang quét…' : 'Quét Gmail' }}
-                    </button>
-                    <a
-                        v-else
-                        :href="route('gmail.connect')"
-                        class="rounded-lg bg-violet-600 px-3 py-2 text-white hover:bg-violet-500"
-                    >
-                        Kết nối Gmail
-                    </a>
-                    <Link
-                        v-if="gmail_connected"
-                        :href="route('gmail.disconnect')"
-                        method="delete"
-                        as="button"
-                        class="text-slate-500 hover:text-slate-300 hover:underline"
-                    >
-                        Ngắt kết nối
-                    </Link>
-                    <Link
-                        :href="route('subscriptions.index')"
-                        class="text-violet-400 hover:text-violet-300 hover:underline"
-                    >
-                        Quản lý danh sách
-                    </Link>
-                </div>
+                <Link
+                    :href="route('subscriptions.index')"
+                    class="text-sm text-violet-400 hover:text-violet-300 hover:underline"
+                >
+                    Quản lý danh sách
+                </Link>
             </div>
         </template>
 
@@ -174,17 +64,56 @@ onBeforeUnmount(stopPolling);
             <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                 <div
                     v-if="subscriptions.length === 0"
-                    class="rounded-2xl border border-white/5 bg-midnight-900 p-12 text-center shadow-lg shadow-black/20"
+                    class="rounded-2xl border border-white/5 bg-midnight-900 p-6 shadow-lg shadow-black/20 sm:p-10"
                 >
-                    <p class="text-slate-400">
-                        Chưa có dịch vụ nào trong vũ trụ của bạn.
+                    <p class="text-center text-xl font-extrabold tracking-tight text-white">
+                        Bắt đầu từ đâu?
                     </p>
-                    <Link
-                        :href="route('subscriptions.create')"
-                        class="mt-4 inline-block rounded-lg bg-violet-600 px-4 py-2 text-white hover:bg-violet-500"
-                    >
-                        Thêm dịch vụ đầu tiên
-                    </Link>
+                    <p class="mx-auto mt-2 max-w-md text-center text-sm text-slate-400">
+                        Keepler có thể tự tìm các dịch vụ bạn đang trả tiền từ email hóa
+                        đơn trong Gmail, hoặc bạn tự thêm từng dịch vụ.
+                    </p>
+
+                    <div class="mt-8 grid gap-3 sm:grid-cols-2">
+                        <button
+                            v-if="gmail_connected"
+                            type="button"
+                            :disabled="scanning"
+                            class="flex flex-col gap-1 rounded-2xl bg-violet-600 p-5 text-left text-white transition hover:bg-violet-500 disabled:opacity-60"
+                            @click="startScan"
+                        >
+                            <span class="font-semibold">Bắt đầu quét</span>
+                            <span class="text-sm text-violet-200">
+                                Gmail đã kết nối — tìm hóa đơn ngay.
+                            </span>
+                        </button>
+                        <a
+                            v-else
+                            :href="route('gmail.connect')"
+                            class="flex flex-col gap-1 rounded-2xl bg-violet-600 p-5 text-white transition hover:bg-violet-500"
+                        >
+                            <span class="font-semibold">Quét Gmail</span>
+                            <span class="text-sm text-violet-200">
+                                Tự tìm dịch vụ từ email hóa đơn.
+                            </span>
+                        </a>
+
+                        <Link
+                            :href="route('subscriptions.create')"
+                            class="flex flex-col gap-1 rounded-2xl border border-white/10 bg-midnight-800 p-5 transition hover:bg-midnight-700"
+                        >
+                            <span class="font-semibold text-slate-100">Nhập tay</span>
+                            <span class="text-sm text-slate-400">
+                                Thêm dịch vụ đầu tiên của bạn.
+                            </span>
+                        </Link>
+                    </div>
+
+                    <p class="mt-6 text-center text-xs text-slate-500">
+                        Keepler chỉ xin quyền <span class="text-slate-400">đọc</span> Gmail
+                        và chỉ đọc email hóa đơn. Bạn ngắt kết nối bất cứ lúc nào trong
+                        Cài đặt.
+                    </p>
                 </div>
 
                 <template v-else>
@@ -242,64 +171,15 @@ onBeforeUnmount(stopPolling);
             </div>
         </div>
 
-        <Teleport to="body">
-            <div
-                v-if="scanning"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm"
-            >
-                <div
-                    class="mx-4 flex w-full max-w-sm flex-col gap-4 rounded-2xl border border-white/10 bg-midnight-900 p-8 shadow-2xl"
-                >
-                    <template v-if="!scanError">
-                        <div class="flex items-center gap-3">
-                            <span
-                                class="h-6 w-6 shrink-0 animate-spin rounded-full border-4 border-violet-500 border-t-transparent"
-                            ></span>
-                            <p class="text-lg font-semibold text-white">
-                                Đang quét Gmail…
-                            </p>
-                        </div>
+        <GmailScanProgress
+            v-if="scanning"
+            :scan-error="scanError"
+            :processed="processed"
+            :total="total"
+            :percent="percent"
+            @close="closeScan"
+            @retry="startScan"
+        />
 
-                        <div>
-                            <div class="h-2.5 w-full overflow-hidden rounded-full bg-midnight-800">
-                                <div
-                                    class="h-full rounded-full bg-violet-500 transition-all duration-300"
-                                    :style="{ width: percent + '%' }"
-                                ></div>
-                            </div>
-                            <p class="mt-2 text-center text-sm text-slate-500">
-                                <template v-if="total > 0">
-                                    Đang xử lý {{ processed }}/{{ total }} email — {{ percent }}%
-                                </template>
-                                <template v-else>
-                                    Đang tìm email hóa đơn…
-                                </template>
-                            </p>
-                        </div>
-                    </template>
-
-                    <template v-else>
-                        <p class="text-lg font-semibold text-white">Quét thất bại</p>
-                        <p class="text-sm text-slate-400">{{ scanError }}</p>
-                        <div class="flex justify-end gap-2">
-                            <button
-                                type="button"
-                                class="rounded-lg px-3 py-2 text-sm text-slate-400 hover:underline"
-                                @click="closeScan"
-                            >
-                                Đóng
-                            </button>
-                            <button
-                                type="button"
-                                class="rounded-lg bg-violet-600 px-3 py-2 text-sm text-white hover:bg-violet-500"
-                                @click="startScan"
-                            >
-                                Thử lại
-                            </button>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </Teleport>
     </AuthenticatedLayout>
 </template>

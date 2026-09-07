@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -19,6 +20,31 @@ class ProfileTest extends TestCase
             ->get('/profile');
 
         $response->assertOk();
+    }
+
+    public function test_profile_page_reports_gmail_as_disconnected_without_a_refresh_token(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/profile')
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Profile/Edit')
+                ->where('gmail_connected', false)
+            );
+    }
+
+    public function test_profile_page_reports_gmail_as_connected_once_a_refresh_token_is_stored(): void
+    {
+        $user = User::factory()->create();
+        $user->forceFill(['gmail_refresh_token' => 'refresh-456'])->save();
+
+        $this->actingAs($user)
+            ->get('/profile')
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Profile/Edit')
+                ->where('gmail_connected', true)
+            );
     }
 
     public function test_profile_information_can_be_updated(): void
