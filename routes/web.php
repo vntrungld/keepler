@@ -14,6 +14,10 @@ Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 });
 
+// No token: a keep-alive ping does nothing an anonymous request could not
+// already do by loading any page, and the scheduler stays a plain GET.
+Route::get('/cron/warm', [CronController::class, 'warm'])->name('cron.warm');
+
 Route::post('/cron/renewal-reminders', [CronController::class, 'renewalReminders'])
     ->middleware(VerifyCronToken::class)
     ->name('cron.renewal-reminders');
