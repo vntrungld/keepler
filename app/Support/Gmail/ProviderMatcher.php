@@ -8,6 +8,11 @@ class ProviderMatcher
      * Return the provider key whose sender domain matches the From header's
      * host (exact host or a subdomain of it), or null if none match.
      *
+     * A provider marked `requires_product_match` sells more than one thing, so
+     * its sender domain alone proves nothing: every OpenAI email arrives from
+     * openai.com whether it bills a ChatGPT Plus subscription or pay-as-you-go
+     * API usage. Those providers must also name their product in the email.
+     *
      * When the sender is a known payment aggregator (e.g. Google Play or
      * Stripe, which forward/process receipts for many unrelated merchants),
      * the real provider is resolved ONLY by scanning the email body for a
@@ -23,7 +28,7 @@ class ProviderMatcher
             return self::matchByBody($body);
         }
 
-        return self::matchByDomain($from);
+        return self::matchByDomain($from, $subject."\n".$body);
     }
 
     private static function isAggregator(string $from, string $subject): bool
@@ -77,7 +82,7 @@ class ProviderMatcher
         return null;
     }
 
-    private static function matchByDomain(string $from): ?string
+    private static function matchByDomain(string $from, string $text = ''): ?string
     {
         $host = self::extractHost($from);
         if ($host === null) {
@@ -91,13 +96,35 @@ class ProviderMatcher
 
             foreach ($provider['sender_domains'] ?? [] as $domain) {
                 $domain = strtolower($domain);
-                if ($host === $domain || str_ends_with($host, '.'.$domain)) {
-                    return $key;
+                if ($host !== $domain && ! str_ends_with($host, '.'.$domain)) {
+                    continue;
                 }
+
+                // Keep looking rather than bailing out: another catalog entry may
+                // share this domain and actually be named in the email.
+                if (($provider['requires_product_match'] ?? false) && ! self::mentionsProduct($provider, $text)) {
+                    continue 2;
+                }
+
+                return $key;
             }
         }
 
         return null;
+    }
+
+    /** Whether the email names this provider's product via its `match_keywords`. */
+    private static function mentionsProduct(array $provider, string $text): bool
+    {
+        $textLower = strtolower($text);
+
+        foreach ($provider['match_keywords'] ?? [] as $keyword) {
+            if ($keyword !== '' && str_contains($textLower, strtolower($keyword))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

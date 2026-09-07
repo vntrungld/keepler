@@ -59,7 +59,13 @@ return [
         'sender_domains' => ['openai.com'],
         'payment_keywords' => ['receipt', 'payment', 'chatgpt'],
         'cancellation_keywords' => ['cancelled', 'canceled', 'subscription ended'],
-        'match_keywords' => ['chatgpt', 'openai'],
+        // "openai" is the vendor, not the product: matching it made every
+        // OpenAI charge — including pay-as-you-go API invoices routed through
+        // Stripe — look like a ChatGPT Plus subscription.
+        'match_keywords' => ['chatgpt'],
+        // OpenAI bills ChatGPT Plus and pay-as-you-go API usage from the same
+        // domain, so the email must actually name ChatGPT to count.
+        'requires_product_match' => true,
         'default_currency' => 'USD',
         'default_cycle' => 'monthly',
         'cancel_url' => 'https://chatgpt.com/#settings',
@@ -70,6 +76,8 @@ return [
         'payment_keywords' => ['google one', 'receipt', 'payment'],
         'cancellation_keywords' => ['cancelled', 'canceled', 'membership ended'],
         'match_keywords' => ['google one', 'google ai'],
+        // google.com sends mail for dozens of unrelated products.
+        'requires_product_match' => true,
         'default_currency' => 'USD',
         'default_cycle' => 'monthly',
         'cancel_url' => 'https://one.google.com/',

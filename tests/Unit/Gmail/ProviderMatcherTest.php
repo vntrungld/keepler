@@ -107,4 +107,55 @@ class ProviderMatcherTest extends TestCase
             'chatgpt plus',
         ));
     }
+
+    public function test_an_openai_api_invoice_is_not_treated_as_a_chatgpt_subscription(): void
+    {
+        $key = ProviderMatcher::match(
+            'OpenAI <invoice+statements@stripe.com>',
+            'Your invoice from OpenAI',
+            "Invoice from OpenAI\nAPI usage - gpt-5\nTotal $0.20",
+        );
+
+        $this->assertNull($key);
+    }
+
+    public function test_a_chatgpt_plus_receipt_through_stripe_still_matches(): void
+    {
+        $key = ProviderMatcher::match(
+            'OpenAI <invoice+statements@stripe.com>',
+            'Your receipt from OpenAI',
+            "Receipt from OpenAI\nChatGPT Plus subscription\nTotal $20.00",
+        );
+
+        $this->assertSame('chatgpt', $key);
+    }
+
+    public function test_an_openai_api_invoice_from_openais_own_domain_is_not_a_chatgpt_subscription(): void
+    {
+        $key = ProviderMatcher::match(
+            'OpenAI <noreply@email.openai.com>',
+            'Your OpenAI invoice',
+            "Invoice from OpenAI\nAPI usage - gpt-5\nTotal $0.20",
+        );
+
+        $this->assertNull($key);
+    }
+
+    public function test_a_chatgpt_plus_receipt_from_openais_own_domain_still_matches(): void
+    {
+        $key = ProviderMatcher::match(
+            'OpenAI <noreply@email.openai.com>',
+            'Your receipt from OpenAI',
+            "Receipt\nChatGPT Plus subscription\nTotal $20.00",
+        );
+
+        $this->assertSame('chatgpt', $key);
+    }
+
+    public function test_a_single_product_vendor_still_matches_on_sender_domain_alone(): void
+    {
+        $key = ProviderMatcher::match('Netflix <info@netflix.com>', 'Your receipt', 'Thanks for your payment.');
+
+        $this->assertSame('netflix', $key);
+    }
 }
