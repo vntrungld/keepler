@@ -110,4 +110,10 @@ COPY .infrastructure/s6-rc.d/queue-worker /etc/s6-overlay/s6-rc.d/queue-worker
 RUN chmod +x /etc/s6-overlay/s6-rc.d/queue-worker/run && \
     touch /etc/s6-overlay/s6-rc.d/user/contents.d/queue-worker
 
+# Run a leaner boot sequence than the image's own Laravel automations, which
+# `AUTORUN_ENABLED=false` disables. Every second here is a second the user waits
+# when the sleeping free instance wakes up. See the script for what it drops.
+COPY .infrastructure/entrypoint.d/51-app-boot.sh /etc/entrypoint.d/51-app-boot.sh
+RUN chmod +x /etc/entrypoint.d/51-app-boot.sh
+
 USER www-data

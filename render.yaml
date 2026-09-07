@@ -56,10 +56,13 @@ services:
       - key: DB_QUEUE_RETRY_AFTER
         value: "300"
 
-      # Laravel automations in serversideup/php: migrate, then cache config,
-      # routes, events and views on boot.
+      # The image's Laravel automations are off: they spend ~13s of every
+      # container boot in four separate `php artisan` processes, and the
+      # container is rebuilt from the image each time the free instance wakes
+      # from sleep. `.infrastructure/entrypoint.d/51-app-boot.sh` runs migrate
+      # and optimize instead.
       - key: AUTORUN_ENABLED
-        value: "true"
+        value: "false"
       - key: HEALTHCHECK_PATH
         value: /up
       - key: PHP_OPCACHE_ENABLE

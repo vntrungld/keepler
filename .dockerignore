@@ -10,6 +10,9 @@ docker-*.yml
 # The deploy stage installs this s6 service, so it has to reach the build context.
 !.infrastructure/s6-rc.d
 !.infrastructure/s6-rc.d/**
+# Same for the boot script that replaces the image's Laravel automations.
+!.infrastructure/entrypoint.d
+!.infrastructure/entrypoint.d/**
 node_modules
 vendor
 
@@ -17,6 +20,8 @@ vendor
 # .env would otherwise ship real secrets and override the host's env vars.
 .env
 .env.*
+# The local dev database is 1MB of real data and the deployment uses Postgres.
+database/*.sqlite*
 public/build
 public/hot
 public/storage
