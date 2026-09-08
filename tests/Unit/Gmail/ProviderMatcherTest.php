@@ -158,4 +158,123 @@ class ProviderMatcherTest extends TestCase
 
         $this->assertSame('netflix', $key);
     }
+
+    public function test_apple_music_receipt_does_not_resolve_to_apple_one(): void
+    {
+        $key = ProviderMatcher::match(
+            'Apple <no_reply@email.apple.com>',
+            'Your receipt from Apple',
+            "Apple Music Individual\nMonthly\n$10.99",
+        );
+
+        $this->assertSame('applemusic', $key);
+    }
+
+    public function test_apple_tv_and_arcade_resolve_to_their_own_products(): void
+    {
+        $this->assertSame('appletv', ProviderMatcher::match(
+            'Apple <no_reply@email.apple.com>',
+            'Your receipt from Apple',
+            "Apple TV+\nMonthly\n$12.99",
+        ));
+
+        $this->assertSame('applearcade', ProviderMatcher::match(
+            'Apple <no_reply@email.apple.com>',
+            'Your receipt from Apple',
+            "Apple Arcade\nMonthly\n$6.99",
+        ));
+    }
+
+    public function test_a_bare_apple_receipt_naming_no_product_is_skipped(): void
+    {
+        // apple.com bills five different catalog products plus one-off App
+        // Store purchases, so the domain alone proves nothing.
+        $this->assertNull(ProviderMatcher::match(
+            'Apple <no_reply@email.apple.com>',
+            'Your receipt from Apple',
+            "Some Game Coins Pack\n$4.99",
+        ));
+    }
+
+    public function test_youtube_music_and_tv_do_not_resolve_to_youtube_premium(): void
+    {
+        $this->assertSame('youtubemusic', ProviderMatcher::match(
+            'YouTube <noreply@youtube.com>',
+            'Your YouTube Music receipt',
+            'YouTube Music Premium $11.99',
+        ));
+
+        $this->assertSame('youtubetv', ProviderMatcher::match(
+            'YouTube <noreply@youtube.com>',
+            'Your YouTube TV receipt',
+            'YouTube TV Base Plan $82.99',
+        ));
+    }
+
+    public function test_google_workspace_does_not_resolve_to_google_one(): void
+    {
+        $this->assertSame('googleworkspace', ProviderMatcher::match(
+            'no-reply@google.com',
+            'Your Google Workspace invoice',
+            'Google Workspace Business Starter $14.00',
+        ));
+    }
+
+    public function test_longest_keyword_wins_over_catalog_order_via_an_aggregator(): void
+    {
+        // Both `youtube` ("youtube") and `youtubemusic` ("youtube music")
+        // match this body. The more specific product must win regardless of
+        // which entry the catalog happens to list first.
+        $this->assertSame('youtubemusic', ProviderMatcher::match(
+            'googleplay-noreply@google.com',
+            'Your Google Play Order Receipt from Jun 28, 2026',
+            'YouTube Music Premium (by Google LLC) 59.000 \u20ab/month',
+        ));
+    }
+
+    public function test_every_catalog_entry_is_well_formed(): void
+    {
+        foreach (config('providers') as $key => $provider) {
+            if ($key === '_aggregators') {
+                continue;
+            }
+
+            $this->assertMatchesRegularExpression('/^[a-z0-9]+$/', $key, "catalog key `{$key}` must be lowercase alphanumeric");
+            $this->assertNotEmpty($provider['name'] ?? null, "`{$key}` is missing a name");
+            $this->assertMatchesRegularExpression('/^#[0-9A-F]{6}$/', $provider['color'] ?? '', "`{$key}` needs an uppercase 6-digit hex color");
+            $this->assertNotEmpty($provider['domain'] ?? null, "`{$key}` is missing a domain for the favicon fallback");
+            $this->assertNotEmpty($provider['sender_domains'] ?? [], "`{$key}` is missing sender_domains");
+            $this->assertNotEmpty($provider['match_keywords'] ?? [], "`{$key}` is missing match_keywords");
+            $this->assertNotEmpty($provider['payment_keywords'] ?? [], "`{$key}` is missing payment_keywords");
+            $this->assertNotEmpty($provider['cancellation_keywords'] ?? [], "`{$key}` is missing cancellation_keywords");
+            $this->assertContains($provider['default_cycle'] ?? null, ['monthly', 'yearly'], "`{$key}` has a bad default_cycle");
+            $this->assertNotEmpty($provider['cancel_url'] ?? null, "`{$key}` is missing a cancel_url");
+        }
+    }
+
+    public function test_providers_sharing_a_sender_domain_require_a_product_match(): void
+    {
+        $byDomain = [];
+        foreach (config('providers') as $key => $provider) {
+            if ($key === '_aggregators') {
+                continue;
+            }
+            foreach ($provider['sender_domains'] as $domain) {
+                $byDomain[$domain][] = $key;
+            }
+        }
+
+        foreach ($byDomain as $domain => $keys) {
+            if (count($keys) < 2) {
+                continue;
+            }
+
+            foreach ($keys as $key) {
+                $this->assertTrue(
+                    config("providers.{$key}.requires_product_match") === true,
+                    "`{$key}` shares sender domain `{$domain}` with ".(count($keys) - 1).' other entr(y|ies), so it must set requires_product_match',
+                );
+            }
+        }
+    }
 }

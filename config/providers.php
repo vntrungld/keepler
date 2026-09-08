@@ -1,13 +1,44 @@
 <?php
 
 // Subscription-provider catalog for rule-based Gmail detection.
-// Each key MUST match the SP2 brand-color catalog key so imported
-// subscriptions render with the right planet color.
 //
-// `match_keywords` lists body-detectable product terms used to resolve the
-// real provider when an email comes from a payment aggregator (see
-// `_aggregators` below), e.g. Google Play receipts that mention the actual
-// product ("Google One", "Spotify", ...) in the body rather than the sender.
+// The catalog itself lives in `resources/data/services.json` so that ONE file
+// feeds both this config (Gmail detection) and the frontend (brand colour,
+// brand icon, and the service picker on the "add subscription" form). Keeping
+// them in sync by hand is what this indirection exists to prevent.
+//
+// This file's job is to load that catalog and fill in the fields most entries
+// share, so a service only spells out what makes it different:
+//
+//   name                     display name
+//   domain                   canonical web domain (favicon fallback, frontend)
+//   color                    brand colour (frontend)
+//   icon                     simple-icons export name, or null (frontend)
+//   sender_domains           From: hosts that prove the mail is from the vendor
+//   match_keywords           product terms that identify the product in a body
+//   requires_product_match   vendor sells more than one catalog product, so the
+//                            sender domain alone proves nothing — the email
+//                            must also name the product (see ProviderMatcher)
+//   payment_keywords         terms marking a receipt (defaults below)
+//   cancellation_keywords    terms marking a cancellation (defaults below)
+//   default_currency         defaults to USD
+//   default_cycle            monthly | yearly
+//   cancel_url               where the user cancels
+//
+// `match_keywords` doubles as the resolver for payment aggregators (see
+// `_aggregators`): a Google Play or Stripe receipt names the real product in
+// its body rather than its sender.
+
+$defaults = [
+    'payment_keywords' => ['receipt', 'payment', 'invoice', 'subscription', 'hóa đơn', 'thanh toán', 'gia hạn'],
+    'cancellation_keywords' => ['cancelled', 'canceled', 'subscription ended', 'membership ended', 'đã hủy'],
+    'default_currency' => 'USD',
+    'default_cycle' => 'monthly',
+    'requires_product_match' => false,
+];
+
+$catalog = json_decode(file_get_contents(resource_path('data/services.json')), true, 512, JSON_THROW_ON_ERROR);
+
 return [
     // Senders that forward/consolidate receipts for many different
     // products (payment processors / app stores). Entries may be an exact
@@ -24,102 +55,5 @@ return [
         'stripe.com',
     ],
 
-    'netflix' => [
-        'name' => 'Netflix',
-        'sender_domains' => ['netflix.com', 'members.netflix.com'],
-        'payment_keywords' => ['receipt', 'payment', 'hóa đơn', 'gia hạn'],
-        'cancellation_keywords' => ['cancelled', 'canceled', 'membership ended', 'đã hủy'],
-        'match_keywords' => ['netflix'],
-        'default_currency' => 'USD',
-        'default_cycle' => 'monthly',
-        'cancel_url' => 'https://www.netflix.com/cancelplan',
-    ],
-    'spotify' => [
-        'name' => 'Spotify',
-        'sender_domains' => ['spotify.com'],
-        'payment_keywords' => ['receipt', 'payment', 'premium'],
-        'cancellation_keywords' => ['cancelled', 'canceled', 'subscription ended'],
-        'match_keywords' => ['spotify'],
-        'default_currency' => 'USD',
-        'default_cycle' => 'monthly',
-        'cancel_url' => 'https://www.spotify.com/account/subscription/',
-    ],
-    'youtube' => [
-        'name' => 'YouTube Premium',
-        'sender_domains' => ['youtube.com'],
-        'payment_keywords' => ['receipt', 'payment', 'youtube premium'],
-        'cancellation_keywords' => ['cancelled', 'canceled', 'membership paused'],
-        'match_keywords' => ['youtube premium', 'youtube'],
-        'default_currency' => 'USD',
-        'default_cycle' => 'monthly',
-        'cancel_url' => 'https://www.youtube.com/paid_memberships',
-    ],
-    'chatgpt' => [
-        'name' => 'ChatGPT Plus',
-        'sender_domains' => ['openai.com'],
-        'payment_keywords' => ['receipt', 'payment', 'chatgpt'],
-        'cancellation_keywords' => ['cancelled', 'canceled', 'subscription ended'],
-        // "openai" is the vendor, not the product: matching it made every
-        // OpenAI charge — including pay-as-you-go API invoices routed through
-        // Stripe — look like a ChatGPT Plus subscription.
-        'match_keywords' => ['chatgpt'],
-        // OpenAI bills ChatGPT Plus and pay-as-you-go API usage from the same
-        // domain, so the email must actually name ChatGPT to count.
-        'requires_product_match' => true,
-        'default_currency' => 'USD',
-        'default_cycle' => 'monthly',
-        'cancel_url' => 'https://chatgpt.com/#settings',
-    ],
-    'google' => [
-        'name' => 'Google One',
-        'sender_domains' => ['google.com', 'payments.google.com'],
-        'payment_keywords' => ['google one', 'receipt', 'payment'],
-        'cancellation_keywords' => ['cancelled', 'canceled', 'membership ended'],
-        'match_keywords' => ['google one', 'google ai'],
-        // google.com sends mail for dozens of unrelated products.
-        'requires_product_match' => true,
-        'default_currency' => 'USD',
-        'default_cycle' => 'monthly',
-        'cancel_url' => 'https://one.google.com/',
-    ],
-    'adobe' => [
-        'name' => 'Adobe',
-        'sender_domains' => ['adobe.com', 'mail.adobe.com'],
-        'payment_keywords' => ['receipt', 'invoice', 'payment'],
-        'cancellation_keywords' => ['cancelled', 'canceled', 'plan cancelled'],
-        'match_keywords' => ['adobe'],
-        'default_currency' => 'USD',
-        'default_cycle' => 'monthly',
-        'cancel_url' => 'https://account.adobe.com/plans',
-    ],
-    'apple' => [
-        'name' => 'Apple',
-        'sender_domains' => ['apple.com', 'email.apple.com'],
-        'payment_keywords' => ['receipt', 'your invoice', 'subscription'],
-        'cancellation_keywords' => ['cancelled', 'canceled', 'subscription ended'],
-        'match_keywords' => ['apple'],
-        'default_currency' => 'USD',
-        'default_cycle' => 'monthly',
-        'cancel_url' => 'https://apps.apple.com/account/subscriptions',
-    ],
-    'amazon' => [
-        'name' => 'Amazon Prime',
-        'sender_domains' => ['amazon.com', 'primevideo.com'],
-        'payment_keywords' => ['prime', 'receipt', 'payment', 'membership'],
-        'cancellation_keywords' => ['cancelled', 'canceled', 'membership ended'],
-        'match_keywords' => ['amazon prime', 'prime video'],
-        'default_currency' => 'USD',
-        'default_cycle' => 'yearly',
-        'cancel_url' => 'https://www.amazon.com/gp/primecentral',
-    ],
-    'disney' => [
-        'name' => 'Disney+',
-        'sender_domains' => ['disneyplus.com', 'mail.disneyplus.com'],
-        'payment_keywords' => ['receipt', 'payment', 'subscription'],
-        'cancellation_keywords' => ['cancelled', 'canceled', 'subscription ended'],
-        'match_keywords' => ['disney'],
-        'default_currency' => 'USD',
-        'default_cycle' => 'monthly',
-        'cancel_url' => 'https://www.disneyplus.com/account/subscription',
-    ],
+    ...array_map(fn (array $service): array => [...$defaults, ...$service], $catalog),
 ];

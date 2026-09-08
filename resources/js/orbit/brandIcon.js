@@ -1,32 +1,110 @@
-// Curated brand-icon lookup for the subscription list/detail UI. Mirrors
-// the keyword catalog in brandColors.js — small and hand-picked, not the
-// full simple-icons dataset, to keep the bundle lean.
+// Brand-icon lookup for the subscription list/detail UI.
 //
-// NOTE: simple-icons@16 does not ship Adobe, Amazon, Disney+, or OpenAI
-// icons (pulled from the package for trademark reasons), so those brands
-// are intentionally left out of ICON_CATALOG below even though they have
-// entries in brandColors.js. resolveBrandIcon() returns null for them and
-// BrandIcon.vue falls back to the letter avatar.
-import { siNetflix, siSpotify, siYoutube, siApple, siGoogle } from 'simple-icons';
-import { normalize } from './brandColors.js';
+// Which brand gets which icon is declared in `resources/data/services.json`
+// (the `icon` field, holding a simple-icons export name). This file only
+// bridges those names to the actual icon objects: the imports below are
+// static and explicit so the bundler ships exactly the 42 icons the catalog
+// asks for, rather than pulling in all ~3,400 of them.
+//
+// NOTE: simple-icons@16 does not ship icons for Adobe, Amazon, Disney+,
+// Microsoft, OpenAI, Canva, Hulu, Xbox, Nintendo, Peacock and a handful more
+// (pulled for trademark reasons). Those catalog entries carry `icon: null`;
+// resolveBrandIcon() returns null for them and BrandIcon.vue falls back to
+// the domain favicon, then to the letter avatar.
+import {
+    si1password,
+    siApple,
+    siApplearcade,
+    siApplemusic,
+    siAppletv,
+    siAudible,
+    siClaude,
+    siCrunchyroll,
+    siCursor,
+    siDoordash,
+    siDropbox,
+    siDuolingo,
+    siEvernote,
+    siFitbit,
+    siGithubcopilot,
+    siGoogle,
+    siGooglegemini,
+    siGrammarly,
+    siHeadspace,
+    siIcloud,
+    siMax,
+    siMedium,
+    siNetflix,
+    siNordvpn,
+    siNotion,
+    siParamountplus,
+    siPeloton,
+    siPerplexity,
+    siPlaystation,
+    siProtonmail,
+    siProtonvpn,
+    siShopify,
+    siSpotify,
+    siSquarespace,
+    siStrava,
+    siThewashingtonpost,
+    siTodoist,
+    siTradingview,
+    siUber,
+    siYoutube,
+    siYoutubemusic,
+    siYoutubetv,
+} from 'simple-icons';
+import { resolveService } from './brandColors.js';
 
-const ICON_CATALOG = [
-    ['netflix', siNetflix],
-    ['spotify', siSpotify],
-    ['youtube', siYoutube],
-    ['apple', siApple],
-    ['google', siGoogle],
-];
+const ICONS = {
+    si1password,
+    siApple,
+    siApplearcade,
+    siApplemusic,
+    siAppletv,
+    siAudible,
+    siClaude,
+    siCrunchyroll,
+    siCursor,
+    siDoordash,
+    siDropbox,
+    siDuolingo,
+    siEvernote,
+    siFitbit,
+    siGithubcopilot,
+    siGoogle,
+    siGooglegemini,
+    siGrammarly,
+    siHeadspace,
+    siIcloud,
+    siMax,
+    siMedium,
+    siNetflix,
+    siNordvpn,
+    siNotion,
+    siParamountplus,
+    siPeloton,
+    siPerplexity,
+    siPlaystation,
+    siProtonmail,
+    siProtonvpn,
+    siShopify,
+    siSpotify,
+    siSquarespace,
+    siStrava,
+    siThewashingtonpost,
+    siTodoist,
+    siTradingview,
+    siUber,
+    siYoutube,
+    siYoutubemusic,
+    siYoutubetv,
+};
 
 export function resolveBrandIcon(name) {
-    const norm = normalize(name);
-    if (!norm) return null;
+    const icon = ICONS[resolveService(name)?.icon];
+    if (!icon) return null;
 
-    for (const [keyword, icon] of ICON_CATALOG) {
-        if (norm.includes(keyword)) {
-            return { path: icon.path, hex: icon.hex, title: icon.title };
-        }
-    }
-
-    return null;
+    return { path: icon.path, hex: icon.hex, title: icon.title };
 }

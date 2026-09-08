@@ -4,5 +4,6 @@ Before planning or editing, find the row whose globs match the file's path and r
 
 | Applies to | Rule file |
 | --- | --- |
+| resources/data/services.json | .ai/rules/data.md |
 | .infrastructure/entrypoint.d/** | .ai/rules/general.md |
 | app/Jobs/** | .ai/rules/jobs.md |

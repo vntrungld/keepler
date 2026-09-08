@@ -22,7 +22,33 @@ class SubscriptionController extends Controller
         return Inertia::render('Subscriptions/Create', [
             'currencies' => CurrencyConverter::supportedCurrencies(),
             'paymentMethods' => $request->user()->paymentMethods()->get(['id', 'label']),
+            'services' => $this->serviceCatalog(),
         ]);
+    }
+
+    /**
+     * The catalog rows the "add subscription" picker pre-fills the form from.
+     *
+     * Only the fields the form actually writes are sent: sender domains and
+     * detection keywords are Gmail-scanning internals with no business in the
+     * browser, and shipping all of them would triple the payload.
+     *
+     * Currency is deliberately absent — the catalog lists USD prices, but the
+     * form defaults to VND and that is usually what the user is billed.
+     *
+     * @return array<int,array{name:string,default_cycle:string,cancel_url:string}>
+     */
+    private function serviceCatalog(): array
+    {
+        return collect(config('providers'))
+            ->except('_aggregators')
+            ->map(fn (array $service): array => [
+                'name' => $service['name'],
+                'default_cycle' => $service['default_cycle'],
+                'cancel_url' => $service['cancel_url'],
+            ])
+            ->values()
+            ->all();
     }
 
     public function store(SubscriptionRequest $request)

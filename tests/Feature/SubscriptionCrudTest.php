@@ -6,6 +6,7 @@ use App\Models\PaymentMethod;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class SubscriptionCrudTest extends TestCase
@@ -261,5 +262,28 @@ class SubscriptionCrudTest extends TestCase
         ])->assertRedirect('/subscriptions');
 
         $this->assertSame(1, $sub->events()->where('kind', 'cancelled')->count());
+    }
+
+    public function test_the_create_page_offers_the_service_catalog(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/subscriptions/create')
+            ->assertInertia(function (AssertableInertia $page) {
+                $page->has('services', 62)
+                    ->where('services.0.name', 'Netflix')
+                    ->where('services.0.cancel_url', 'https://www.netflix.com/cancelplan')
+                    ->where('services.0.default_cycle', 'monthly');
+
+                // The picker only needs what it fills the form with; the Gmail
+                // detection keywords have no business reaching the browser,
+                // and currency stays whatever the user chose.
+                $service = $page->toArray()['props']['services'][0];
+                $this->assertSame(
+                    ['name', 'default_cycle', 'cancel_url'],
+                    array_keys((array) $service),
+                );
+            });
     }
 }

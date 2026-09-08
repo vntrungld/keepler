@@ -1,0 +1,1096 @@
+{
+    "netflix": {
+        "name": "Netflix",
+        "domain": "netflix.com",
+        "color": "#E50914",
+        "icon": "siNetflix",
+        "sender_domains": [
+            "netflix.com",
+            "members.netflix.com"
+        ],
+        "match_keywords": [
+            "netflix"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.netflix.com/cancelplan",
+        "payment_keywords": [
+            "receipt",
+            "payment",
+            "hóa đơn",
+            "gia hạn"
+        ],
+        "cancellation_keywords": [
+            "cancelled",
+            "canceled",
+            "membership ended",
+            "đã hủy"
+        ]
+    },
+    "spotify": {
+        "name": "Spotify",
+        "domain": "spotify.com",
+        "color": "#1DB954",
+        "icon": "siSpotify",
+        "sender_domains": [
+            "spotify.com"
+        ],
+        "match_keywords": [
+            "spotify"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.spotify.com/account/subscription/",
+        "payment_keywords": [
+            "receipt",
+            "payment",
+            "premium"
+        ],
+        "cancellation_keywords": [
+            "cancelled",
+            "canceled",
+            "subscription ended"
+        ]
+    },
+    "youtube": {
+        "name": "YouTube Premium",
+        "domain": "youtube.com",
+        "color": "#FF0000",
+        "icon": "siYoutube",
+        "sender_domains": [
+            "youtube.com"
+        ],
+        "match_keywords": [
+            "youtube premium",
+            "youtube"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.youtube.com/paid_memberships",
+        "payment_keywords": [
+            "receipt",
+            "payment",
+            "youtube premium"
+        ],
+        "cancellation_keywords": [
+            "cancelled",
+            "canceled",
+            "membership paused"
+        ],
+        "requires_product_match": true
+    },
+    "chatgpt": {
+        "name": "ChatGPT Plus",
+        "domain": "openai.com",
+        "color": "#10A37F",
+        "icon": null,
+        "sender_domains": [
+            "openai.com"
+        ],
+        "match_keywords": [
+            "chatgpt"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://chatgpt.com/#settings",
+        "payment_keywords": [
+            "receipt",
+            "payment",
+            "chatgpt"
+        ],
+        "cancellation_keywords": [
+            "cancelled",
+            "canceled",
+            "subscription ended"
+        ],
+        "requires_product_match": true,
+        "aliases": [
+            "openai"
+        ]
+    },
+    "google": {
+        "name": "Google One",
+        "domain": "one.google.com",
+        "color": "#4285F4",
+        "icon": "siGoogle",
+        "sender_domains": [
+            "google.com",
+            "payments.google.com"
+        ],
+        "match_keywords": [
+            "google one",
+            "google ai"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://one.google.com/",
+        "payment_keywords": [
+            "google one",
+            "receipt",
+            "payment"
+        ],
+        "cancellation_keywords": [
+            "cancelled",
+            "canceled",
+            "membership ended"
+        ],
+        "requires_product_match": true,
+        "aliases": [
+            "google"
+        ]
+    },
+    "adobe": {
+        "name": "Adobe Creative Cloud",
+        "domain": "adobe.com",
+        "color": "#FF0000",
+        "icon": null,
+        "sender_domains": [
+            "adobe.com",
+            "mail.adobe.com"
+        ],
+        "match_keywords": [
+            "creative cloud",
+            "adobe"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://account.adobe.com/plans",
+        "payment_keywords": [
+            "receipt",
+            "invoice",
+            "payment"
+        ],
+        "cancellation_keywords": [
+            "cancelled",
+            "canceled",
+            "plan cancelled"
+        ],
+        "requires_product_match": true,
+        "aliases": [
+            "adobe"
+        ]
+    },
+    "apple": {
+        "name": "Apple One",
+        "domain": "apple.com",
+        "color": "#555555",
+        "icon": "siApple",
+        "sender_domains": [
+            "apple.com",
+            "email.apple.com"
+        ],
+        "match_keywords": [
+            "apple one"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://apps.apple.com/account/subscriptions",
+        "payment_keywords": [
+            "receipt",
+            "your invoice",
+            "subscription"
+        ],
+        "cancellation_keywords": [
+            "cancelled",
+            "canceled",
+            "subscription ended"
+        ],
+        "requires_product_match": true,
+        "aliases": [
+            "apple"
+        ]
+    },
+    "amazon": {
+        "name": "Amazon Prime",
+        "domain": "amazon.com",
+        "color": "#FF9900",
+        "icon": null,
+        "sender_domains": [
+            "amazon.com",
+            "primevideo.com"
+        ],
+        "match_keywords": [
+            "amazon prime",
+            "prime video"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://www.amazon.com/gp/primecentral",
+        "payment_keywords": [
+            "prime",
+            "receipt",
+            "payment",
+            "membership"
+        ],
+        "cancellation_keywords": [
+            "cancelled",
+            "canceled",
+            "membership ended"
+        ],
+        "requires_product_match": true,
+        "aliases": [
+            "prime"
+        ]
+    },
+    "disney": {
+        "name": "Disney+",
+        "domain": "disneyplus.com",
+        "color": "#113CCF",
+        "icon": null,
+        "sender_domains": [
+            "disneyplus.com",
+            "mail.disneyplus.com"
+        ],
+        "match_keywords": [
+            "disney"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.disneyplus.com/account/subscription",
+        "payment_keywords": [
+            "receipt",
+            "payment",
+            "subscription"
+        ],
+        "cancellation_keywords": [
+            "cancelled",
+            "canceled",
+            "subscription ended"
+        ]
+    },
+    "icloud": {
+        "name": "iCloud+",
+        "domain": "icloud.com",
+        "color": "#3693F3",
+        "icon": "siIcloud",
+        "sender_domains": [
+            "apple.com",
+            "email.apple.com"
+        ],
+        "match_keywords": [
+            "icloud+",
+            "icloud"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://apps.apple.com/account/subscriptions",
+        "requires_product_match": true
+    },
+    "applemusic": {
+        "name": "Apple Music",
+        "domain": "music.apple.com",
+        "color": "#FA243C",
+        "icon": "siApplemusic",
+        "sender_domains": [
+            "apple.com",
+            "email.apple.com"
+        ],
+        "match_keywords": [
+            "apple music"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://apps.apple.com/account/subscriptions",
+        "requires_product_match": true
+    },
+    "appletv": {
+        "name": "Apple TV+",
+        "domain": "tv.apple.com",
+        "color": "#000000",
+        "icon": "siAppletv",
+        "sender_domains": [
+            "apple.com",
+            "email.apple.com"
+        ],
+        "match_keywords": [
+            "apple tv+",
+            "apple tv"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://apps.apple.com/account/subscriptions",
+        "requires_product_match": true
+    },
+    "applearcade": {
+        "name": "Apple Arcade",
+        "domain": "apple.com",
+        "color": "#000000",
+        "icon": "siApplearcade",
+        "sender_domains": [
+            "apple.com",
+            "email.apple.com"
+        ],
+        "match_keywords": [
+            "apple arcade"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://apps.apple.com/account/subscriptions",
+        "requires_product_match": true
+    },
+    "googleworkspace": {
+        "name": "Google Workspace",
+        "domain": "workspace.google.com",
+        "color": "#4285F4",
+        "icon": "siGoogle",
+        "sender_domains": [
+            "google.com",
+            "payments.google.com"
+        ],
+        "match_keywords": [
+            "google workspace",
+            "g suite"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://admin.google.com/ac/billing/subscriptions",
+        "requires_product_match": true
+    },
+    "gemini": {
+        "name": "Gemini Advanced",
+        "domain": "gemini.google.com",
+        "color": "#8E75B2",
+        "icon": "siGooglegemini",
+        "sender_domains": [
+            "google.com",
+            "payments.google.com"
+        ],
+        "match_keywords": [
+            "gemini advanced",
+            "google gemini"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://one.google.com/",
+        "requires_product_match": true
+    },
+    "youtubemusic": {
+        "name": "YouTube Music",
+        "domain": "music.youtube.com",
+        "color": "#FF0000",
+        "icon": "siYoutubemusic",
+        "sender_domains": [
+            "youtube.com"
+        ],
+        "match_keywords": [
+            "youtube music"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.youtube.com/paid_memberships",
+        "requires_product_match": true
+    },
+    "youtubetv": {
+        "name": "YouTube TV",
+        "domain": "tv.youtube.com",
+        "color": "#FF0000",
+        "icon": "siYoutubetv",
+        "sender_domains": [
+            "youtube.com"
+        ],
+        "match_keywords": [
+            "youtube tv"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://tv.youtube.com/settings/membership",
+        "requires_product_match": true
+    },
+    "microsoft365": {
+        "name": "Microsoft 365",
+        "domain": "microsoft.com",
+        "color": "#D83B01",
+        "icon": null,
+        "sender_domains": [
+            "microsoft.com",
+            "email.microsoft.com"
+        ],
+        "match_keywords": [
+            "microsoft 365",
+            "office 365"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://account.microsoft.com/services/",
+        "requires_product_match": true,
+        "aliases": [
+            "microsoft"
+        ]
+    },
+    "onedrive": {
+        "name": "Microsoft OneDrive",
+        "domain": "onedrive.com",
+        "color": "#0078D4",
+        "icon": null,
+        "sender_domains": [
+            "microsoft.com",
+            "email.microsoft.com"
+        ],
+        "match_keywords": [
+            "onedrive"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://account.microsoft.com/services/",
+        "requires_product_match": true
+    },
+    "xboxgamepass": {
+        "name": "Xbox Game Pass",
+        "domain": "xbox.com",
+        "color": "#107C10",
+        "icon": null,
+        "sender_domains": [
+            "microsoft.com",
+            "email.microsoft.com"
+        ],
+        "match_keywords": [
+            "game pass",
+            "xbox"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://account.microsoft.com/services/",
+        "requires_product_match": true,
+        "aliases": [
+            "xbox"
+        ]
+    },
+    "lightroom": {
+        "name": "Adobe Lightroom",
+        "domain": "lightroom.adobe.com",
+        "color": "#31A8FF",
+        "icon": null,
+        "sender_domains": [
+            "adobe.com",
+            "mail.adobe.com"
+        ],
+        "match_keywords": [
+            "lightroom"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://account.adobe.com/plans",
+        "requires_product_match": true
+    },
+    "amazonmusic": {
+        "name": "Amazon Music Unlimited",
+        "domain": "music.amazon.com",
+        "color": "#25D1DA",
+        "icon": null,
+        "sender_domains": [
+            "amazon.com",
+            "primevideo.com"
+        ],
+        "match_keywords": [
+            "amazon music"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.amazon.com/music/settings",
+        "requires_product_match": true
+    },
+    "protonmail": {
+        "name": "Proton Mail",
+        "domain": "proton.me",
+        "color": "#6D4AFF",
+        "icon": "siProtonmail",
+        "sender_domains": [
+            "proton.me",
+            "protonmail.com"
+        ],
+        "match_keywords": [
+            "proton mail",
+            "protonmail"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://account.proton.me/dashboard",
+        "requires_product_match": true,
+        "aliases": [
+            "proton mail"
+        ]
+    },
+    "protonvpn": {
+        "name": "Proton VPN",
+        "domain": "protonvpn.com",
+        "color": "#66DEB1",
+        "icon": "siProtonvpn",
+        "sender_domains": [
+            "proton.me",
+            "protonmail.com"
+        ],
+        "match_keywords": [
+            "proton vpn",
+            "protonvpn"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://account.proton.me/dashboard",
+        "requires_product_match": true
+    },
+    "canva": {
+        "name": "Canva Pro",
+        "domain": "canva.com",
+        "color": "#00C4CC",
+        "icon": null,
+        "sender_domains": [
+            "canva.com"
+        ],
+        "match_keywords": [
+            "canva"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.canva.com/settings/billing-and-plans"
+    },
+    "playstation": {
+        "name": "PlayStation Plus",
+        "domain": "playstation.com",
+        "color": "#0070D1",
+        "icon": "siPlaystation",
+        "sender_domains": [
+            "playstation.com",
+            "sony.com"
+        ],
+        "match_keywords": [
+            "playstation plus",
+            "ps plus"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.playstation.com/acct/subscription"
+    },
+    "ynab": {
+        "name": "YNAB",
+        "domain": "ynab.com",
+        "color": "#85C226",
+        "icon": null,
+        "sender_domains": [
+            "ynab.com",
+            "youneedabudget.com"
+        ],
+        "match_keywords": [
+            "ynab",
+            "you need a budget"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://app.ynab.com/settings/subscription"
+    },
+    "onepassword": {
+        "name": "1Password",
+        "domain": "1password.com",
+        "color": "#145FE4",
+        "icon": "si1password",
+        "sender_domains": [
+            "1password.com",
+            "agilebits.com"
+        ],
+        "match_keywords": [
+            "1password"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://my.1password.com/subscription"
+    },
+    "duolingo": {
+        "name": "Duolingo",
+        "domain": "duolingo.com",
+        "color": "#58CC02",
+        "icon": "siDuolingo",
+        "sender_domains": [
+            "duolingo.com"
+        ],
+        "match_keywords": [
+            "duolingo"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://www.duolingo.com/settings/subscription"
+    },
+    "githubcopilot": {
+        "name": "GitHub Copilot",
+        "domain": "github.com",
+        "color": "#000000",
+        "icon": "siGithubcopilot",
+        "sender_domains": [
+            "github.com"
+        ],
+        "match_keywords": [
+            "github copilot",
+            "copilot"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://github.com/settings/copilot",
+        "requires_product_match": true,
+        "aliases": [
+            "copilot"
+        ]
+    },
+    "nintendoswitchonline": {
+        "name": "Nintendo Switch Online",
+        "domain": "nintendo.com",
+        "color": "#E60012",
+        "icon": null,
+        "sender_domains": [
+            "nintendo.com",
+            "nintendo.net"
+        ],
+        "match_keywords": [
+            "nintendo switch online",
+            "switch online"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://accounts.nintendo.com/subscription"
+    },
+    "strava": {
+        "name": "Strava",
+        "domain": "strava.com",
+        "color": "#FC4C02",
+        "icon": "siStrava",
+        "sender_domains": [
+            "strava.com"
+        ],
+        "match_keywords": [
+            "strava"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://www.strava.com/settings/subscription"
+    },
+    "paramountplus": {
+        "name": "Paramount+",
+        "domain": "paramountplus.com",
+        "color": "#0064FF",
+        "icon": "siParamountplus",
+        "sender_domains": [
+            "paramountplus.com",
+            "cbsi.com"
+        ],
+        "match_keywords": [
+            "paramount+",
+            "paramount plus"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.paramountplus.com/account/"
+    },
+    "claude": {
+        "name": "Claude Pro",
+        "domain": "claude.ai",
+        "color": "#D97757",
+        "icon": "siClaude",
+        "sender_domains": [
+            "anthropic.com",
+            "claude.ai"
+        ],
+        "match_keywords": [
+            "claude pro",
+            "claude max"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://claude.ai/settings/billing",
+        "requires_product_match": true,
+        "aliases": [
+            "claude"
+        ]
+    },
+    "crunchyroll": {
+        "name": "Crunchyroll",
+        "domain": "crunchyroll.com",
+        "color": "#FF5E00",
+        "icon": "siCrunchyroll",
+        "sender_domains": [
+            "crunchyroll.com"
+        ],
+        "match_keywords": [
+            "crunchyroll"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.crunchyroll.com/account/membership"
+    },
+    "cursor": {
+        "name": "Cursor",
+        "domain": "cursor.com",
+        "color": "#000000",
+        "icon": "siCursor",
+        "sender_domains": [
+            "cursor.com",
+            "cursor.sh"
+        ],
+        "match_keywords": [
+            "cursor pro",
+            "cursor"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.cursor.com/settings"
+    },
+    "headspace": {
+        "name": "Headspace",
+        "domain": "headspace.com",
+        "color": "#F47D31",
+        "icon": "siHeadspace",
+        "sender_domains": [
+            "headspace.com"
+        ],
+        "match_keywords": [
+            "headspace"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://www.headspace.com/subscription"
+    },
+    "evernote": {
+        "name": "Evernote",
+        "domain": "evernote.com",
+        "color": "#00A82D",
+        "icon": "siEvernote",
+        "sender_domains": [
+            "evernote.com"
+        ],
+        "match_keywords": [
+            "evernote"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://www.evernote.com/AccountSummary.action"
+    },
+    "notion": {
+        "name": "Notion",
+        "domain": "notion.so",
+        "color": "#000000",
+        "icon": "siNotion",
+        "sender_domains": [
+            "notion.so",
+            "makenotion.com"
+        ],
+        "match_keywords": [
+            "notion"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://www.notion.so/my-settings/billing"
+    },
+    "peloton": {
+        "name": "Peloton",
+        "domain": "onepeloton.com",
+        "color": "#181A1D",
+        "icon": "siPeloton",
+        "sender_domains": [
+            "onepeloton.com"
+        ],
+        "match_keywords": [
+            "peloton"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://members.onepeloton.com/preferences/subscriptions"
+    },
+    "todoist": {
+        "name": "Todoist",
+        "domain": "todoist.com",
+        "color": "#E44332",
+        "icon": "siTodoist",
+        "sender_domains": [
+            "todoist.com",
+            "doist.com"
+        ],
+        "match_keywords": [
+            "todoist"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://todoist.com/prefs/subscription"
+    },
+    "calm": {
+        "name": "Calm",
+        "domain": "calm.com",
+        "color": "#2A6DF4",
+        "icon": null,
+        "sender_domains": [
+            "calm.com"
+        ],
+        "match_keywords": [
+            "calm premium",
+            "calm subscription"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://www.calm.com/profile",
+        "aliases": [
+            "calm"
+        ]
+    },
+    "fitbitpremium": {
+        "name": "Fitbit Premium",
+        "domain": "fitbit.com",
+        "color": "#00B0B9",
+        "icon": "siFitbit",
+        "sender_domains": [
+            "fitbit.com"
+        ],
+        "match_keywords": [
+            "fitbit premium",
+            "fitbit"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://www.fitbit.com/settings/subscriptions",
+        "aliases": [
+            "fitbit"
+        ]
+    },
+    "hulu": {
+        "name": "Hulu",
+        "domain": "hulu.com",
+        "color": "#1CE783",
+        "icon": null,
+        "sender_domains": [
+            "hulu.com"
+        ],
+        "match_keywords": [
+            "hulu"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://secure.hulu.com/account"
+    },
+    "max": {
+        "name": "Max",
+        "domain": "max.com",
+        "color": "#525252",
+        "icon": "siMax",
+        "sender_domains": [
+            "max.com",
+            "hbomax.com"
+        ],
+        "match_keywords": [
+            "hbo max"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://auth.max.com/settings/subscription",
+        "aliases": [
+            "max"
+        ]
+    },
+    "myfitnesspal": {
+        "name": "MyFitnessPal",
+        "domain": "myfitnesspal.com",
+        "color": "#0072EF",
+        "icon": null,
+        "sender_domains": [
+            "myfitnesspal.com"
+        ],
+        "match_keywords": [
+            "myfitnesspal"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://www.myfitnesspal.com/account/subscription"
+    },
+    "nordvpn": {
+        "name": "NordVPN",
+        "domain": "nordvpn.com",
+        "color": "#4687FF",
+        "icon": "siNordvpn",
+        "sender_domains": [
+            "nordvpn.com",
+            "nordaccount.com"
+        ],
+        "match_keywords": [
+            "nordvpn"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://my.nordaccount.com/billing/"
+    },
+    "shopify": {
+        "name": "Shopify",
+        "domain": "shopify.com",
+        "color": "#7AB55C",
+        "icon": "siShopify",
+        "sender_domains": [
+            "shopify.com"
+        ],
+        "match_keywords": [
+            "shopify"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://admin.shopify.com/settings/billing"
+    },
+    "discoveryplus": {
+        "name": "discovery+",
+        "domain": "discoveryplus.com",
+        "color": "#2175D9",
+        "icon": null,
+        "sender_domains": [
+            "discoveryplus.com",
+            "discovery.com"
+        ],
+        "match_keywords": [
+            "discovery+",
+            "discovery plus"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.discoveryplus.com/account",
+        "aliases": [
+            "discovery"
+        ]
+    },
+    "dropbox": {
+        "name": "Dropbox",
+        "domain": "dropbox.com",
+        "color": "#0061FF",
+        "icon": "siDropbox",
+        "sender_domains": [
+            "dropbox.com"
+        ],
+        "match_keywords": [
+            "dropbox"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.dropbox.com/account/plan"
+    },
+    "grammarly": {
+        "name": "Grammarly",
+        "domain": "grammarly.com",
+        "color": "#027E6F",
+        "icon": "siGrammarly",
+        "sender_domains": [
+            "grammarly.com"
+        ],
+        "match_keywords": [
+            "grammarly"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://account.grammarly.com/subscription"
+    },
+    "medium": {
+        "name": "Medium",
+        "domain": "medium.com",
+        "color": "#000000",
+        "icon": "siMedium",
+        "sender_domains": [
+            "medium.com"
+        ],
+        "match_keywords": [
+            "medium membership"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://medium.com/me/settings/membership",
+        "aliases": [
+            "medium"
+        ]
+    },
+    "midjourney": {
+        "name": "Midjourney",
+        "domain": "midjourney.com",
+        "color": "#000000",
+        "icon": null,
+        "sender_domains": [
+            "midjourney.com"
+        ],
+        "match_keywords": [
+            "midjourney"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://www.midjourney.com/account/"
+    },
+    "perplexity": {
+        "name": "Perplexity Pro",
+        "domain": "perplexity.ai",
+        "color": "#1FB8CD",
+        "icon": "siPerplexity",
+        "sender_domains": [
+            "perplexity.ai"
+        ],
+        "match_keywords": [
+            "perplexity"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.perplexity.ai/settings/account"
+    },
+    "monarchmoney": {
+        "name": "Monarch Money",
+        "domain": "monarchmoney.com",
+        "color": "#0F7B6C",
+        "icon": null,
+        "sender_domains": [
+            "monarchmoney.com"
+        ],
+        "match_keywords": [
+            "monarch money",
+            "monarch premium"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://app.monarchmoney.com/settings/billing"
+    },
+    "peacock": {
+        "name": "Peacock",
+        "domain": "peacocktv.com",
+        "color": "#000000",
+        "icon": null,
+        "sender_domains": [
+            "peacocktv.com",
+            "nbcuni.com"
+        ],
+        "match_keywords": [
+            "peacock"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.peacocktv.com/account/plans"
+    },
+    "squarespace": {
+        "name": "Squarespace",
+        "domain": "squarespace.com",
+        "color": "#000000",
+        "icon": "siSquarespace",
+        "sender_domains": [
+            "squarespace.com"
+        ],
+        "match_keywords": [
+            "squarespace"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://account.squarespace.com/settings/billing"
+    },
+    "tradingview": {
+        "name": "TradingView",
+        "domain": "tradingview.com",
+        "color": "#131622",
+        "icon": "siTradingview",
+        "sender_domains": [
+            "tradingview.com"
+        ],
+        "match_keywords": [
+            "tradingview"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.tradingview.com/gopro/"
+    },
+    "uberone": {
+        "name": "Uber One",
+        "domain": "uber.com",
+        "color": "#000000",
+        "icon": "siUber",
+        "sender_domains": [
+            "uber.com"
+        ],
+        "match_keywords": [
+            "uber one"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.uber.com/account/uber-one",
+        "requires_product_match": true,
+        "aliases": [
+            "uber one"
+        ]
+    },
+    "washingtonpost": {
+        "name": "Washington Post",
+        "domain": "washingtonpost.com",
+        "color": "#231F20",
+        "icon": "siThewashingtonpost",
+        "sender_domains": [
+            "washingtonpost.com"
+        ],
+        "match_keywords": [
+            "washington post"
+        ],
+        "default_cycle": "yearly",
+        "cancel_url": "https://subscribe.washingtonpost.com/account/",
+        "aliases": [
+            "washington post"
+        ]
+    },
+    "audible": {
+        "name": "Audible",
+        "domain": "audible.com",
+        "color": "#F8991C",
+        "icon": "siAudible",
+        "sender_domains": [
+            "audible.com"
+        ],
+        "match_keywords": [
+            "audible"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.audible.com/account/membership"
+    },
+    "doordash": {
+        "name": "DoorDash DashPass",
+        "domain": "doordash.com",
+        "color": "#FF3008",
+        "icon": "siDoordash",
+        "sender_domains": [
+            "doordash.com"
+        ],
+        "match_keywords": [
+            "dashpass"
+        ],
+        "default_cycle": "monthly",
+        "cancel_url": "https://www.doordash.com/account/dashpass/",
+        "aliases": [
+            "doordash"
+        ]
+    }
+}

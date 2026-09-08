@@ -1,10 +1,11 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+import BrandIcon from '@/orbit/BrandIcon.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import axios from 'axios';
 
-const props = defineProps({ currencies: Array, paymentMethods: Array });
+const props = defineProps({ currencies: Array, paymentMethods: Array, services: Array });
 
 const paymentMethodOptions = ref([...props.paymentMethods]);
 const newPaymentMethodLabel = ref('');
@@ -26,6 +27,21 @@ const form = useForm({
     is_trial: false,
     started_at: '',
 });
+
+// Picking a known service fills in what the catalog already knows, so the
+// user only has to type what is personal to them (amount, renewal date).
+// Currency is left alone on purpose: the catalog's prices are USD list
+// prices, but most people here are billed in VND.
+watch(
+    () => form.name,
+    (name) => {
+        const service = props.services.find((s) => s.name === name);
+        if (!service) return;
+
+        form.billing_cycle = service.default_cycle;
+        form.cancel_url = service.cancel_url;
+    },
+);
 
 async function addPaymentMethod() {
     if (!newPaymentMethodLabel.value.trim()) return;
@@ -72,7 +88,18 @@ function submit() {
                 class="mx-auto max-w-lg space-y-3 rounded-2xl border border-white/5 bg-midnight-900 p-6 shadow-lg shadow-black/20"
                 @submit.prevent="submit"
             >
-                <input v-model="form.name" placeholder="Tên" class="w-full rounded-lg border border-white/10 bg-midnight-800 p-2 text-slate-100 placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500" />
+                <div class="flex items-center gap-2">
+                    <BrandIcon :name="form.name || '?'" :size="40" />
+                    <input
+                        v-model="form.name"
+                        list="service-options"
+                        placeholder="Tên dịch vụ (chọn hoặc tự nhập)"
+                        class="w-full rounded-lg border border-white/10 bg-midnight-800 p-2 text-slate-100 placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500"
+                    />
+                </div>
+                <datalist id="service-options">
+                    <option v-for="service in services" :key="service.name" :value="service.name" />
+                </datalist>
                 <input v-model="form.amount" type="number" step="0.01" placeholder="Số tiền" class="w-full rounded-lg border border-white/10 bg-midnight-800 p-2 text-slate-100 placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500" />
                 <select v-model="form.currency" class="w-full rounded-lg border border-white/10 bg-midnight-800 p-2 text-slate-100 focus:border-violet-500 focus:ring-violet-500">
                     <option v-for="c in currencies" :key="c" :value="c">{{ c }}</option>
