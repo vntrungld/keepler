@@ -121,4 +121,130 @@ class SubscriptionModelTest extends TestCase
         $this->assertSame(0, $subscription->subscribed_days);
         $this->assertSame(0.0, $subscription->total_spent);
     }
+
+    public function test_total_periods_computes_ends_at_as_the_last_billing_date(): void
+    {
+        $user = User::factory()->create();
+
+        $sub = $user->subscriptions()->create([
+            'name' => 'iPhone tra gop',
+            'amount' => 2000000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-10-05',
+            'started_at' => '2026-09-05',
+            'total_periods' => 12,
+        ]);
+
+        $this->assertSame('2027-08-05', $sub->ends_at->toDateString());
+    }
+
+    public function test_ends_at_clamps_to_the_end_of_a_short_month(): void
+    {
+        $user = User::factory()->create();
+
+        $sub = $user->subscriptions()->create([
+            'name' => 'Khoa hoc',
+            'amount' => 500000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-02-28',
+            'started_at' => '2026-01-31',
+            'total_periods' => 2,
+        ]);
+
+        $this->assertSame('2026-02-28', $sub->ends_at->toDateString());
+    }
+
+    public function test_a_subscription_without_total_periods_has_no_end_date(): void
+    {
+        $user = User::factory()->create();
+
+        $sub = $user->subscriptions()->create([
+            'name' => 'Netflix',
+            'amount' => 260000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-10-05',
+            'started_at' => '2026-09-05',
+        ]);
+
+        $this->assertNull($sub->ends_at);
+        $this->assertNull($sub->periods_remaining);
+        $this->assertFalse($sub->has_ended);
+    }
+
+    public function test_periods_remaining_counts_the_billings_left_after_the_ones_already_paid(): void
+    {
+        $user = User::factory()->create();
+
+        $sub = $user->subscriptions()->create([
+            'name' => 'Macbook tra gop',
+            'amount' => 3000000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-12-05',
+            'started_at' => '2026-09-05',
+            'total_periods' => 12,
+        ]);
+
+        $this->assertSame(3, $sub->periods_paid);
+        $this->assertSame(9, $sub->periods_remaining);
+    }
+
+    public function test_a_subscription_past_its_last_billing_date_has_ended(): void
+    {
+        $user = User::factory()->create();
+        $this->travelTo('2027-09-06');
+
+        $sub = $user->subscriptions()->create([
+            'name' => 'Macbook tra gop',
+            'amount' => 3000000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2027-08-05',
+            'started_at' => '2026-09-05',
+            'total_periods' => 12,
+        ]);
+
+        $this->assertTrue($sub->has_ended);
+        $this->assertSame(0, $sub->periods_remaining);
+    }
+
+    public function test_a_subscription_on_its_last_billing_date_has_not_ended_yet(): void
+    {
+        $user = User::factory()->create();
+        $this->travelTo('2027-08-05');
+
+        $sub = $user->subscriptions()->create([
+            'name' => 'Macbook tra gop',
+            'amount' => 3000000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2027-08-05',
+            'started_at' => '2026-09-05',
+            'total_periods' => 12,
+        ]);
+
+        $this->assertFalse($sub->has_ended);
+        $this->assertSame(1, $sub->periods_remaining);
+    }
+
+    public function test_total_spent_stops_growing_once_every_period_is_paid(): void
+    {
+        $user = User::factory()->create();
+        $this->travelTo('2029-09-05');
+
+        $sub = $user->subscriptions()->create([
+            'name' => 'Macbook tra gop',
+            'amount' => 3000000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2027-08-05',
+            'started_at' => '2026-09-05',
+            'total_periods' => 12,
+        ]);
+
+        $this->assertSame(36000000.0, $sub->total_spent);
+    }
 }

@@ -1,7 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import BrandIcon from '@/orbit/BrandIcon.vue';
-import { statusLabel, cycleLabel, formatVnd } from '@/orbit/labels.js';
+import { statusLabel, cycleLabel, endedLabel, periodsLabel, formatVnd } from '@/orbit/labels.js';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -109,7 +109,17 @@ function destroy() {
                     </div>
                     <div>
                         <dt class="text-slate-500">Trạng thái</dt>
-                        <dd class="text-slate-100">{{ statusLabel[subscription.status] ?? subscription.status }}</dd>
+                        <dd class="text-slate-100">
+                            {{ subscription.has_ended ? endedLabel : (statusLabel[subscription.status] ?? subscription.status) }}
+                        </dd>
+                    </div>
+                    <div v-if="subscription.total_periods">
+                        <dt class="text-slate-500">Kỳ thanh toán</dt>
+                        <dd class="text-slate-100">{{ periodsLabel(subscription) }}</dd>
+                    </div>
+                    <div v-if="subscription.ends_at">
+                        <dt class="text-slate-500">Kỳ cuối</dt>
+                        <dd class="text-slate-100">{{ subscription.ends_at.slice(0, 10) }}</dd>
                     </div>
                     <div v-if="subscription.is_trial">
                         <dt class="text-slate-500">Dùng thử</dt>

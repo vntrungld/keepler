@@ -12,10 +12,11 @@ class CalendarController extends Controller
     {
         $subscriptions = $request->user()->subscriptions()
             ->where('status', '!=', 'cancelled')
+            ->notEnded()
             ->orderBy('id')
             ->get([
                 'id', 'name', 'provider_key', 'amount', 'currency', 'amount_vnd',
-                'billing_cycle', 'next_renewal_date', 'status', 'started_at', 'created_at',
+                'billing_cycle', 'next_renewal_date', 'status', 'started_at', 'total_periods', 'ends_at', 'created_at',
             ]);
 
         return Inertia::render('Calendar/Index', [

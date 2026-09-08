@@ -18,6 +18,7 @@ class SendRenewalReminders extends Command
 
         Subscription::query()
             ->where('status', 'active')
+            ->notEnded()
             ->whereHas('user', function ($query) {
                 $query->where('renewal_reminders_enabled', true)
                     ->whereNotNull('email_verified_at');

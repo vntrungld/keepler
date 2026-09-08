@@ -1,6 +1,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { lastBillingDate } from '@/orbit/calendar.js';
 import { computed, ref } from 'vue';
 import axios from 'axios';
 
@@ -27,7 +28,14 @@ const form = useForm({
     payment_method_id: props.subscription.payment_method_id ?? '',
     is_trial: props.subscription.is_trial,
     started_at: props.subscription.started_at?.slice(0, 10) ?? '',
+    total_periods: props.subscription.total_periods ?? '',
 });
+
+// Mirrors the ends_at the server computes on save, so the user can see the
+// finish line before committing to a period count.
+const endsAtPreview = computed(
+    () => lastBillingDate(form.started_at, form.billing_cycle, Number(form.total_periods)),
+);
 
 async function addPaymentMethod() {
     if (!newPaymentMethodLabel.value.trim()) return;
@@ -151,6 +159,22 @@ function submit() {
                     <div>
                         <label class="text-sm text-slate-500">Bắt đầu từ</label>
                         <input v-model="form.started_at" type="date" class="mt-1 w-full rounded-lg border border-white/10 bg-midnight-800 p-2 text-slate-100 focus:border-violet-500 focus:ring-violet-500" />
+                    </div>
+
+                    <div>
+                        <label class="text-sm text-slate-500">Tổng số kỳ (tùy chọn)</label>
+                        <input
+                            v-model="form.total_periods"
+                            type="number"
+                            min="1"
+                            step="1"
+                            placeholder="vd: 12 — trả góp 12 tháng"
+                            class="mt-1 w-full rounded-lg border border-white/10 bg-midnight-800 p-2 text-slate-100 placeholder:text-slate-500 focus:border-violet-500 focus:ring-violet-500"
+                        />
+                        <p v-if="form.errors.total_periods" class="mt-1 text-sm text-red-400">{{ form.errors.total_periods }}</p>
+                        <p v-else-if="form.errors.started_at" class="mt-1 text-sm text-red-400">{{ form.errors.started_at }}</p>
+                        <p v-else-if="endsAtPreview" class="mt-1 text-xs text-slate-500">Kỳ cuối vào {{ endsAtPreview }}, sau đó dịch vụ tự chuyển sang "Đã kết thúc".</p>
+                        <p v-else class="mt-1 text-xs text-slate-500">Bỏ trống nếu dịch vụ chạy vô thời hạn.</p>
                     </div>
 
                     <input v-model="form.cancel_url" class="w-full rounded-lg border border-white/10 bg-midnight-800 p-2 text-slate-100 focus:border-violet-500 focus:ring-violet-500" />
