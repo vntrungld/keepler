@@ -286,4 +286,59 @@ class SubscriptionCrudTest extends TestCase
                 );
             });
     }
+
+    public function test_store_accepts_a_total_period_count_and_records_the_end_date(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post('/subscriptions', [
+            'name' => 'Macbook tra gop',
+            'amount' => 3000000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-10-05',
+            'status' => 'active',
+            'started_at' => '2026-09-05',
+            'total_periods' => 12,
+        ])->assertRedirect('/subscriptions');
+
+        $sub = Subscription::first();
+        $this->assertSame(12, $sub->total_periods);
+        $this->assertSame('2027-08-05', $sub->ends_at->toDateString());
+    }
+
+    public function test_store_requires_a_start_date_when_a_period_count_is_given(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post('/subscriptions', [
+            'name' => 'Macbook tra gop',
+            'amount' => 3000000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-10-05',
+            'status' => 'active',
+            'total_periods' => 12,
+        ])->assertSessionHasErrors('started_at');
+
+        $this->assertSame(0, Subscription::count());
+    }
+
+    public function test_store_rejects_a_period_count_below_one(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->post('/subscriptions', [
+            'name' => 'Macbook tra gop',
+            'amount' => 3000000,
+            'currency' => 'VND',
+            'billing_cycle' => 'monthly',
+            'next_renewal_date' => '2026-10-05',
+            'status' => 'active',
+            'started_at' => '2026-09-05',
+            'total_periods' => 0,
+        ])->assertSessionHasErrors('total_periods');
+
+        $this->assertSame(0, Subscription::count());
+    }
 }

@@ -67,12 +67,19 @@ export function projectOccurrences(subscriptions, year, monthIndex) {
                 ? Date.parse(`${sub.created_at.slice(0, 10)}T00:00:00Z`)
                 : -Infinity;
 
+        // Fixed-term plans (installments, a course paid over N months) stop
+        // billing after their final period; everything else runs forever.
+        const upperBound = sub.ends_at
+            ? Date.parse(`${sub.ends_at.slice(0, 10)}T00:00:00Z`)
+            : Infinity;
+
         const maxSteps = stepsToReachMonth(sub, year, monthIndex);
 
         for (let steps = -maxSteps; steps <= maxSteps; steps++) {
             const occurrence = addCycle(sub.next_renewal_date, sub.billing_cycle, steps);
             const ts = occurrence.getTime();
             if (ts < lowerBound) continue;
+            if (ts > upperBound) continue;
             if (ts >= monthStart && ts <= monthEnd) {
                 occurrences.push({ date: toDateStr(occurrence), subscription: sub });
             }
@@ -80,6 +87,18 @@ export function projectOccurrences(subscriptions, year, monthIndex) {
     }
 
     return occurrences;
+}
+
+/**
+ * The date a fixed-term plan bills for the last time. `totalPeriods` counts
+ * the billing on `startedAt` itself, so 12 periods run 11 cycles forward.
+ * Shares addCycle's month-end clamp with the calendar projection, and with
+ * the ends_at the server stores.
+ */
+export function lastBillingDate(startedAt, cycle, totalPeriods) {
+    if (!startedAt || !totalPeriods) return '';
+
+    return toDateStr(addCycle(startedAt, cycle, totalPeriods - 1));
 }
 
 export function groupByDate(occurrences) {

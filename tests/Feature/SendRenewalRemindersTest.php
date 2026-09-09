@@ -157,4 +157,21 @@ class SendRenewalRemindersTest extends TestCase
         );
         $this->assertNull($failingSubscription->fresh()->last_reminder_sent_for);
     }
+
+    public function test_does_not_send_for_a_plan_whose_final_period_has_already_been_paid(): void
+    {
+        Notification::fake();
+
+        $user = User::factory()->create(['reminder_days_before' => 3]);
+        Subscription::factory()->for($user)->create([
+            'status' => 'active',
+            'started_at' => now()->subMonths(6)->toDateString(),
+            'total_periods' => 3,
+            'next_renewal_date' => now()->addDays(3)->toDateString(),
+        ]);
+
+        $this->artisan('subscriptions:send-renewal-reminders');
+
+        Notification::assertNotSentTo($user, SubscriptionRenewalReminder::class);
+    }
 }

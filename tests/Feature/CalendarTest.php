@@ -34,4 +34,29 @@ class CalendarTest extends TestCase
                 ->where('subscriptions.0.name', 'Netflix')
             );
     }
+
+    public function test_calendar_hides_subscriptions_whose_last_period_has_been_paid(): void
+    {
+        $user = User::factory()->create();
+        $this->travelTo('2027-09-06');
+
+        Subscription::factory()->for($user)->create([
+            'name' => 'Netflix',
+            'started_at' => '2026-09-05',
+            'next_renewal_date' => '2026-10-05',
+        ]);
+        Subscription::factory()->for($user)->create([
+            'name' => 'Macbook tra gop',
+            'started_at' => '2026-09-05',
+            'next_renewal_date' => '2027-08-05',
+            'total_periods' => 12,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/calendar')
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('subscriptions', 1)
+                ->where('subscriptions.0.name', 'Netflix')
+            );
+    }
 }

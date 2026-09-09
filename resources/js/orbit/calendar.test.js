@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { projectOccurrences, groupByDate, monthTotals, dayLogos, MAX_DAY_LOGOS } from './calendar.js';
+import { projectOccurrences, groupByDate, monthTotals, dayLogos, lastBillingDate, MAX_DAY_LOGOS } from './calendar.js';
 
 const monthlySub = {
     id: 1,
@@ -32,6 +32,22 @@ describe('projectOccurrences', () => {
         const occurrences = projectOccurrences([monthlySub], 2026, 6); // July 2026
         expect(occurrences).toHaveLength(1);
         expect(occurrences[0].date).toBe('2026-07-15');
+    });
+
+    it('stops projecting a fixed-term plan after its last billing date', () => {
+        const installment = {
+            id: 3,
+            name: 'Macbook',
+            billing_cycle: 'monthly',
+            next_renewal_date: '2026-05-05',
+            status: 'active',
+            amount_vnd: 3000000,
+            started_at: '2026-01-05',
+            ends_at: '2026-06-05',
+        };
+
+        expect(projectOccurrences([installment], 2026, 5)).toHaveLength(1); // June, the last billing
+        expect(projectOccurrences([installment], 2026, 6)).toHaveLength(0); // July, after the end
     });
 
     it('only projects a yearly subscription into the matching month', () => {
@@ -104,6 +120,25 @@ describe('projectOccurrences', () => {
         const nonLeap = projectOccurrences([leapYearlySub], 2027, 1); // February 2027 (non-leap)
         expect(nonLeap).toHaveLength(1);
         expect(nonLeap[0].date).toBe('2027-02-28');
+    });
+});
+
+describe('lastBillingDate', () => {
+    it('lands on the final period, counting the first one', () => {
+        expect(lastBillingDate('2026-09-05', 'monthly', 12)).toBe('2027-08-05');
+    });
+
+    it('clamps a month-end start to the shorter target month', () => {
+        expect(lastBillingDate('2026-01-31', 'monthly', 2)).toBe('2026-02-28');
+    });
+
+    it('steps by years for a yearly cycle', () => {
+        expect(lastBillingDate('2026-03-01', 'yearly', 3)).toBe('2028-03-01');
+    });
+
+    it('is empty without both a start date and a period count', () => {
+        expect(lastBillingDate('', 'monthly', 12)).toBe('');
+        expect(lastBillingDate('2026-09-05', 'monthly', null)).toBe('');
     });
 });
 

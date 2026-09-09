@@ -20,6 +20,16 @@ class SubscriptionRequest extends FormRequest
         ]);
     }
 
+    /**
+     * @return array<string,string>
+     */
+    public function messages(): array
+    {
+        return [
+            'started_at.required_with' => 'Cần ngày bắt đầu để tính được kỳ kết thúc.',
+        ];
+    }
+
     public function rules(): array
     {
         return [
@@ -40,7 +50,8 @@ class SubscriptionRequest extends FormRequest
                 ),
             ],
             'is_trial' => ['boolean'],
-            'started_at' => ['nullable', 'date'],
+            'started_at' => ['nullable', 'date', 'required_with:total_periods'],
+            'total_periods' => ['nullable', 'integer', 'min:1', 'max:600'],
         ];
     }
 }

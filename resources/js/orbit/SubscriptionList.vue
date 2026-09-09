@@ -1,7 +1,7 @@
 <script setup>
 import { Link } from '@inertiajs/vue3';
 import BrandIcon from './BrandIcon.vue';
-import { statusLabel, formatVnd } from './labels.js';
+import { statusLabel, endedLabel, periodsLabel, formatVnd } from './labels.js';
 import { daysUntil, todayLocal } from './layout.js';
 
 defineProps({
@@ -17,11 +17,19 @@ const statusClass = {
 const today = todayLocal();
 
 function renewsInLabel(sub) {
+    // A finished plan has no next billing — its date field is frozen on the
+    // last one, so counting days to it would read as months overdue.
+    if (sub.has_ended) return periodsLabel(sub);
+
     const days = daysUntil(sub.next_renewal_date, today);
     const date = sub.next_renewal_date?.slice(0, 10);
     if (days < 0) return `Quá hạn ${Math.abs(days)} ngày · ${date}`;
-    if (days === 0) return `Tới hạn hôm nay · ${date}`;
-    return `Còn ${days} ngày · ${date}`;
+
+    const periods = periodsLabel(sub);
+    const suffix = periods ? ` · ${periods}` : '';
+
+    if (days === 0) return `Tới hạn hôm nay · ${date}${suffix}`;
+    return `Còn ${days} ngày · ${date}${suffix}`;
 }
 
 function priceLabel(sub) {
@@ -48,7 +56,13 @@ function priceLabel(sub) {
                             the name into an ellipsis on narrow screens.
                         -->
                         <span
-                            v-if="sub.status !== 'active'"
+                            v-if="sub.has_ended"
+                            class="shrink-0 rounded-full bg-slate-500/15 px-2 py-0.5 text-xs font-medium text-slate-400"
+                        >
+                            {{ endedLabel }}
+                        </span>
+                        <span
+                            v-else-if="sub.status !== 'active'"
                             class="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
                             :class="statusClass[sub.status] ?? statusClass.cancelled"
                         >

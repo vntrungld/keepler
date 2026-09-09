@@ -12,11 +12,12 @@ class DashboardController extends Controller
     {
         $subscriptions = $request->user()->subscriptions()
             ->where('status', '!=', 'cancelled')
+            ->notEnded()
             ->orderBy('id')
             ->get([
                 'id', 'name', 'amount', 'currency', 'amount_vnd',
                 'billing_cycle', 'next_renewal_date', 'status', 'list',
-                'started_at', 'created_at',
+                'started_at', 'total_periods', 'ends_at', 'created_at',
             ]);
 
         return Inertia::render('Dashboard', [
